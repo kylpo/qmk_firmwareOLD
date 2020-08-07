@@ -17,3 +17,19 @@ Make example for a specific revision (ex. rev2):
     make navi10/rev2:default
 
 See the [build environment setup](https://docs.qmk.fm/#/getting_started_build_tools) and the [make instructions](https://docs.qmk.fm/#/getting_started_make_guide) for more information. Brand new to QMK? Start with our [Complete Newbs Guide](https://docs.qmk.fm/#/newbs).
+
+## Kylpo notes
+
+```sh
+make navi10/kylpo:kylpo
+
+cp .build/navi10_kylpo_kylpo.hex ~/Downloads
+```
+
+or all in one:
+
+```sh
+make navi10/kylpo:kylpo && cp .build/navi10_kylpo_kylpo.hex ~/Downloads
+```
+
+Then flash it with QMK Toolbox
