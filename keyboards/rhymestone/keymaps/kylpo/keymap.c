@@ -25,15 +25,12 @@ enum layer_number {
 };
 
 enum custom_keycodes {
-  ALTERNATE = SAFE_RANGE,
-  DOT_CTL,
+  DOT_CTL = SAFE_RANGE,
   DOT_COLON
 };
 
 // Defines for layer movement
-// #define LOWER MO(_LOWER)
-// #define RAISE MO(_RAISE)
-
+#define L_ALT MO(_ALTERNATE)
 
 // mod taps
 #define KC_DOTCTL  CTL_T(KC_DOT)
@@ -77,7 +74,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
        DOT_CTL,     KC_P,     KC_G,     KC_V,     KC_X,     KC_J,     KC_K,     KC_Y,     KC_B, KC_SPCMD,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
-          KC_Z,  XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_LSFT,ALTERNATE,  XXXXXXX,  XXXXXXX,  XXXXXXX,     KC_Q
+          KC_Z,  XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_LSFT,    L_ALT,  XXXXXXX,  XXXXXXX,  XXXXXXX,     KC_Q
   //,---------------------------------------------------------------------------------------------------.
   ),
 
@@ -104,10 +101,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //,---------------------------------------------------------------------------------------------------.
   )
 };
-
-#define L_BASE _BASE
-#define L_ALTERNATE (1<<_ALTERNATE)
-
 
 #define maybe_add_weak_mods(keycode, mod)                               \
   if (keycode < QK_MODS_MAX &&                                          \
@@ -190,7 +183,7 @@ static void alternate_ctl(uint16_t to_keycode, uint16_t from_keycode, keyrecord_
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   static uint16_t dot_ctl_timer;
-  static uint16_t alternate_timer;
+  static bool isClicking = false;
   
   bool result = false;
   switch (keycode) {
@@ -231,67 +224,33 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       }
       break;
 
-    // case KC_H: {
-    //   // if(record->event.pressed) {
-    //   //   if (get_mods() & MOD_BIT(KC_LCTL)){
+    case KC_I: {
+      if(record->event.pressed) {
+        // CTRL modifier makes this a mouse click
+        if (get_mods() & MOD_BIT(KC_LCTL)) {
+          isClicking = true;
 
-    //   //     del_mods(MOD_BIT(KC_LCTL));
-    //   //     register_code(KC_MS_UP);
-    //   //     add_mods(MOD_BIT(KC_LCTL));
+          unregister_code(KC_LCTL);
+          send_keyboard_report(); // send mods modifications
+          register_code(KC_MS_BTN1);
+        }
+        // Otherwise, handle as normal alpha key
+        else {
+          register_code(keycode);
+        }
+      } else {
+        if (isClicking) {
+          unregister_code(KC_MS_BTN1);
 
-    //   //   } else {
-    //   //     register_code(KC_H);
-    //   //   }
-    //   // } else {
-    //   //   unregister_code(KC_MS_UP);
-    //   //   unregister_code(KC_H);
-    //   // }
+          register_code(KC_LCTL);
 
-    //   if(record->event.pressed) {
-    //     if (get_mods() & MOD_BIT(KC_LCTL)){
-    //         // TODO: this isn't working
-    //         // del_mods(MOD_BIT(KC_LCTL));
-
-    //         unregister_code(KC_LCTL);
-
-    //         /* send mods modifications */
-    //         send_keyboard_report();
-            
-
-    //         register_code(KC_MS_BTN1);
-
-
-    //         /* send mods modifications */
-    //         // send_keyboard_report();
-    //       }
-    //   } else {
-    //         unregister_code(KC_MS_BTN1);
-
-    //         register_code(KC_LCTL);
-    //   }
-
-    //   // alternate_ctl(KC_MS_BTN1, keycode, record);
-    //   // if (get_mods() & MOD_BIT(KC_LCTL)){
-    //   //       // TODO: this isn't working
-    //   //       // del_mods(MOD_BIT(KC_LCTL));
-
-    //   //       unregister_code(KC_LCTL);
-
-    //   //       /* send mods modifications */
-    //   //       send_keyboard_report();
-            
-
-    //   //       register_code(KC_MS_BTN1);
-
-    //   //       unregister_code(KC_MS_BTN1);
-
-    //   //       register_code(KC_LCTL);
-
-    //   //       /* send mods modifications */
-    //   //       // send_keyboard_report();
-    //   // }
-    //   break;
-    // }
+          isClicking = false;
+        } else {
+          unregister_code(keycode);
+        }
+      }
+      break;
+    }
 
     // Mouse movement when CTL held for S,T,N,O
     case KC_S:
@@ -319,32 +278,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case KC_J:
       alternate_ctl(KC_MS_WH_DOWN, keycode, record);
       // result = alternate_modifier(KC_LCTL, KC_MS_WH_DOWN, record);
-      break;
-    
-    // Mouse click on tap, ALT layer on hold
-    case ALTERNATE:
-      if(record->event.pressed) {
-        alternate_timer = timer_read();
-        // layer_move(_RAISE)
-        layer_on(_ALTERNATE);
-      } else {
-        // layer_clear()
-        layer_off(_ALTERNATE);
-
-        if (timer_elapsed(alternate_timer) < TAPPING_TERM) {
-          if (get_mods() & MOD_BIT(KC_LCTL)){
-            unregister_code(KC_LCTL);
-
-            /* send mods modifications */
-            send_keyboard_report();
-            
-            register_code(KC_MS_BTN1);
-            unregister_code(KC_MS_BTN1);
-
-            register_code(KC_LCTL);
-          }
-        }
-      }
       break;
     default:
       result = true;
