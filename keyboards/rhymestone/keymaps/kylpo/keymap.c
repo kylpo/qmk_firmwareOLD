@@ -321,6 +321,19 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       // result = alternate_modifier(KC_LCTL, KC_MS_WH_DOWN, record);
       break;
     
+    // Notes for future work on this (try Tap Dance)
+    // https://beta.docs.qmk.fm/using-qmk/software-features/feature_tap_dance
+    // https://www.reddit.com/r/olkb/comments/6u7ts4/qmk_momentary_tap_dance_layer_switching_on_a/
+    // https://www.reddit.com/r/olkb/comments/i26uuh/qmk_macro_ideas/g08i7al/
+    // https://thomasbaart.nl/2018/12/13/qmk-basics-tap-dance/
+    // https://docs.qmk.fm/#/feature_tap_dance?id=example-4
+    //
+    // layer stuff
+    // https://beta.docs.qmk.fm/using-qmk/software-features/feature_layers
+    // https://www.reddit.com/r/olkb/comments/7um6mu/qmk_macro_involving_a_layer_toggle/
+    // https://thomasbaart.nl/2018/12/06/qmk-basics-how-to-add-a-layer-to-your-keymap/
+    // https://www.reddit.com/r/olkb/comments/8wks46/qmk_question_layer_toggling_with_tap_momentary/
+
     // Mouse click on tap, ALT layer on hold
     case ALTERNATE:
       if(record->event.pressed) {
