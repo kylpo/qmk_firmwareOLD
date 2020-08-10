@@ -13,12 +13,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+ /*
+ * Notes from kylpo:
+ * Since this board only has a single Shift and Ctrl, by convention,
+ *   only KC_LSHIFT, KC_LCTRL are checked against. If you add a Right,
+ *   be sure to check using MOD_MASK_SHIFT and such.
+ *
+ * Also using only L_ because it simplifies code to only needing
+ *   register/unregister, and not add_mods/del_mods/send_keyboard_report.
+ *   The _mods() functions aren't even documented yet...
+ */
+
 #include QMK_KEYBOARD_H
 
-// Each layer gets a name for readability, which is then used in the keymap matrix below.
-// The underscores don't mean anything - you can have a layer called STUFF or any other name.
-// Layer names don't all need to be of the same length, obviously, and you can also skip them
-// entirely and just use numbers.
 enum layer_number {
   _BASE = 0,
   _ALTERNATE,
@@ -26,8 +34,15 @@ enum layer_number {
 
 enum custom_keycodes {
   DOT_CTL = SAFE_RANGE,
-  DOT_COLON
+  DOT_COLON,
+  M_ASTR_1,
+  M_SLSH_2,
+  M_PLUS_3,
+  M_QUO_4,
+  M_DQUO_5
 };
+
+bool is_shift_pressed = false;
 
 // Defines for layer movement
 #define L_ALT MO(_ALTERNATE)
@@ -37,6 +52,32 @@ enum custom_keycodes {
 #define KC_COMCTL  CTL_T(KC_COMMA)
 #define KC_SPCMD  CMD_T(KC_SPC)
 #define KC_QUOCMD  CMD_T(KC_QUOT)
+
+// Inverted shift status
+#define SHIFT_SWITCH(kc1, kc2) \
+if (record->event.pressed) { \
+  timer_timeout(); \
+  if (lshift || rshift) { \
+    unregister_code(KC_LSFT); \
+    unregister_code(kc2); \
+    register_code(kc2); \
+    add_to_prev(kc2); \
+  } else { \
+    register_code(KC_LSFT); \
+    unregister_code(kc1); \
+    register_code(kc1); \
+    add_to_prev(kc1); \
+  } \
+} else { \
+  unregister_code(kc1); \
+  unregister_code(kc2); \
+  unreg_prev(); \
+  if (lshift || rshift) \
+    register_code(KC_LSFT); \
+  else \
+    unregister_code(KC_LSFT); \
+} \
+return false;
 
 // https://beta.docs.qmk.fm/using-qmk/guides/keymap#keymap-and-layers-id-keymap-and-layers
 //
@@ -57,20 +98,32 @@ enum custom_keycodes {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /* 
  * ,----------------------------------.           ,----------------------------------.
+ * |      |   d  |   h  |   c  |      |           |      |   l  |   s  |   r  |      |
+ * |------+------+------+------+------|           |------+------+------+------+------|
+ * |   f  |   a  |   e  |   i  |   u  |           |   m  |   n  |   t  |   o  |   w  |
+ * |------+------+------+------+------|           |------+------+------+------+------|
+ * |   .  |   p  |   g  |   v  |   x  |           |   j  |   k  |   y  |   b  |  SPC |
+ * |------+------+------+------+------|           |------+------+------+------+------|
+ * |   z  |      |      |      | SHFT |           |  ALT |      |      |      |   q  |
+ * `----------------------------------'           `----------------------------------'
+ */
+ /* 
+ * ,----------------------------------.           ,----------------------------------.
  * |      |   D  |   H  |   C  |      |           |      |   L  |   S  |   R  |      |
  * |------+------+------+------+------|           |------+------+------+------+------|
  * |   F  |   A  |   E  |   I  |   U  |           |   M  |   N  |   T  |   O  |   W  |
  * |------+------+------+------+------|           |------+------+------+------+------|
- * |   .  |   P  |   G  |   V  |   X  |           |   J  |   K  |   Y  |   B  |  SPC |
+ * |   :  |   P  |   G  |   V  |   X  |           |   J  |   K  |   Y  |   B  |  RET |
  * |------+------+------+------+------|           |------+------+------+------+------|
- * |   Z  |      |      |      | SHFT |           |  ALT |      |      |      |   Q  |
+ * |   Z  |      |      |      | ▓▓▓▓ |           |  ALT |      |      |      |   Q  |
  * `----------------------------------'           `----------------------------------'
  */
   [_BASE] = LAYOUT( \
+  // TODO: remove RESET when done coding
   //,---------------------------------------------------------------------------------------------------.
-       XXXXXXX,     KC_D,     KC_H,     KC_C,  XXXXXXX,  XXXXXXX,     KC_L,     KC_S,     KC_R,  XXXXXXX,
+         RESET/*XXXXXXX*/,     KC_D,     KC_H,     KC_C,  XXXXXXX,  XXXXXXX,     KC_L,     KC_S,     KC_R,  XXXXXXX,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-          KC_F,     KC_A,     KC_E,     KC_I,     KC_U,     KC_M,     KC_N,     KC_T,     KC_O,     KC_W,
+          L_ALT/*KC_F*/,     KC_A,     KC_E,     KC_I,     KC_U,     KC_M,     KC_N,     KC_T,     KC_O,     KC_W,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
        DOT_CTL,     KC_P,     KC_G,     KC_V,     KC_X,     KC_J,     KC_K,     KC_Y,     KC_B, KC_SPCMD,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
@@ -80,26 +133,39 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 /* 
  * ,----------------------------------.           ,----------------------------------.
+ * |      |   *  |   /  |   +  |      |           |      |  ESC |  UP  |  ENT |      |
+ * |------+------+------+------+------|           |------+------+------+------+------|
+ * |   !  |   '  |   "  |   -  |   (  |           |   )  | LEFT | DOWN | RIGHT|   @  |
+ * |------+------+------+------+------|           |------+------+------+------+------|
+ * |   ,  |   &  |   |  |   =  |   [  |           |   ]  | BKSP |   ;  |  DEL |   _  |
+ * |------+------+------+------+------|           |------+------+------+------+------|
+ * |   ?  |      |      |      | SHFT |           | ▓▓▓▓ |      |      |      |   `  |
+ * `----------------------------------'           `----------------------------------'
+ */
+ /* 
+ * ALT - SHIFT
+ * ,----------------------------------.           ,----------------------------------.
  * |      |   1  |   2  |   3  |      |           |      |  ESC |  UP  |  ENT |      |
  * |------+------+------+------+------|           |------+------+------+------+------|
- * |   [  |   4  |   5  |   4  |   ]  |           |   -  | LEFT | DOWN | RIGHT|   `  |
+ * |   0  |   4  |   5  |   4  |   {  |           |   }  | LEFT | DOWN | RIGHT|   #  |
  * |------+------+------+------+------|           |------+------+------+------+------|
- * |   ,  |   7  |   8  |   9  |   0  |           |   =  | BKSP |   ;  |  DEL |   '  |
+ * |   ;  |   7  |   8  |   9  |   <  |           |   >  | BKSP |   %  |  DEL |   ~  |
  * |------+------+------+------+------|           |------+------+------+------+------|
- * |   /  |      |      |      | SHFT |           |  ALT |      |      |      |   \  |
+ * |   ^  |      |      |      | ▓▓▓▓ |           | ▓▓▓▓ |      |      |      |   \  |
  * `----------------------------------'           `----------------------------------'
  */
   [_ALTERNATE] = LAYOUT( \
   //,---------------------------------------------------------------------------------------------------.
-       XXXXXXX,     KC_1,     KC_2,     KC_3,  XXXXXXX,  XXXXXXX,   KC_ESC,    KC_UP,   KC_ENT,  XXXXXXX,
+       XXXXXXX, M_ASTR_1, M_SLSH_2, M_PLUS_3,  XXXXXXX,  XXXXXXX,   KC_ESC,    KC_UP,   KC_ENT,  XXXXXXX,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-       KC_LBRC,     KC_4,     KC_5,     KC_6,  KC_RBRC,  KC_MINS,  KC_LEFT,  KC_DOWN,  KC_RGHT,   KC_GRV,
+       KC_LBRC,     KC_4, M_DQUO_5,     KC_6,  KC_RBRC,  KC_MINS,  KC_LEFT,  KC_DOWN,  KC_RGHT,   KC_GRV,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
      KC_COMCTL,     KC_7,     KC_8,     KC_9,     KC_0,   KC_EQL,  KC_BSPC,  KC_SCLN,   KC_DEL,KC_QUOCMD,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
       KC_SLASH,  XXXXXXX,  XXXXXXX,  XXXXXXX,  _______,  _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_BSLS
   //,---------------------------------------------------------------------------------------------------.
   )
+
 };
 
 #define maybe_add_weak_mods(keycode, mod)                               \
@@ -179,14 +245,89 @@ static void alternate_ctl(uint16_t to_keycode, uint16_t from_keycode, keyrecord_
   alternate_modifier_basic(MOD_BIT(KC_LCTL), to_keycode, from_keycode, record);
 }
 
+static void inverted_shift_key(uint16_t keycode_when_shift, uint16_t keycode_when_not_shift, uint8_t *mods, keyrecord_t *record) {
+  if (record->event.pressed) {
+    *mods = get_mods() & MOD_MASK_SHIFT; // 0 if no shift, positive if shift pressed
+
+    if (*mods) {
+      del_mods(*mods); // Remove any Shifts present
+      send_keyboard_report(); // send mods modifications
+      register_code(keycode_when_shift);
+    } else {
+      register_code16(S(keycode_when_not_shift));
+    }
+  } else {
+    if (*mods) {
+      unregister_code(keycode_when_shift);
+      add_mods(*mods);
+    } else {
+      unregister_code16(S(keycode_when_not_shift));
+    }
+  }
+}
+
+// static void shift_unshift(uint16_t keycode_when_shift, uint16_t keycode_when_not_shift, uint8_t *mods, keyrecord_t *record) {
+//   if (record->event.pressed) {
+//     *mods = get_mods() & MOD_MASK_SHIFT; // 0 if no shift, positive if shift pressed
+
+//     if (*mods) {
+//       del_mods(*mods); // Remove any Shifts present
+//       send_keyboard_report(); // send mods modifications
+//       register_code(keycode_when_shift);
+//     } else {
+//       register_code16(S(keycode_when_not_shift));
+//     }
+//   } else {
+//     if (*mods) {
+//       unregister_code(keycode_when_shift);
+//       add_mods(*mods);
+//     } else {
+//       unregister_code16(S(keycode_when_not_shift));
+//     }
+//   }
+// }
+
+// shift_normal
+// shift_all
+// shift_switch
+
+// Different keycode when Ctrl is pressed
 
 
+/*
+  Notes/docs:
+
+  SEND_STRING() - type out a string (C-level preprocessor macro)
+  register_code(KC_) - send KC_ keydown event
+  unregister_code(KC_) - send KC_ keyup event
+  tap_code(KC_) - same as register_code(KC_); unregister_code(KC_);
+  clear_keyboard() - clear all mods and keys currently pressed
+  clear_mods() - clear all mods currently pressed
+
+  return `true` to indicate to the caller that the key press we just processed should continue to be processed as normal
+
+  See also: action_util.c
+  https://github.com/qmk/qmk_firmware/blob/master/tmk_core/common/action_util.c
+*/
+
+// Key macros
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  // `static` will retain the value between separate calls of the function
   static uint16_t dot_ctl_timer;
   static bool isClicking = false;
   
   bool result = false;
   switch (keycode) {
+    case KC_LSFT: {
+      if (record->event.pressed){
+        is_shift_pressed = true;
+      } else {
+        is_shift_pressed = false;
+      }
+      result = true;
+
+      break;
+    }
     case KC_DOT:
       // if (record->event.pressed){
       //   if (get_mods() & MOD_BIT(KC_LSHIFT) || get_mods() & MOD_BIT(KC_RSHIFT)){
@@ -212,13 +353,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         unregister_code(KC_LCTL); // Change the key that was held here, too!
         if (timer_elapsed(dot_ctl_timer) < TAPPING_TERM) {
           if (get_mods() & MOD_BIT(KC_LSHIFT) || get_mods() & MOD_BIT(KC_RSHIFT)){
-            // send :
-            register_code(KC_SCLN);
-            unregister_code(KC_SCLN);
+            tap_code(KC_SCLN); // :
           } else {
-            // send .
-            register_code(KC_DOT);
-            unregister_code(KC_DOT);
+            tap_code(KC_DOT); // .
           }
         }
       }
@@ -279,6 +416,87 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       alternate_ctl(KC_MS_WH_DOWN, keycode, record);
       // result = alternate_modifier(KC_LCTL, KC_MS_WH_DOWN, record);
       break;
+    
+    // Alt-layer
+    // Simple register/unregisters
+    case M_ASTR_1: {
+      static bool m_astr_1_shifted = false;
+    
+      if (record->event.pressed) {
+        if (get_mods() & MOD_MASK_SHIFT) {
+          m_astr_1_shifted = true;
+          unregister_code(KC_LSHIFT);
+          register_code(KC_1);
+        } else {
+          register_code16(S(KC_8));
+        }
+      } else {
+        if (m_astr_1_shifted) {
+          unregister_code(KC_1);
+          if (is_shift_pressed) {
+            register_code(KC_LSHIFT);
+          }
+        } else {
+          unregister_code16(S(KC_8));
+        }
+      }
+
+      break;
+    }
+    case M_SLSH_2: {
+      static uint8_t saved_mods_astr_1 = 0;
+
+      // PLACEHOLDER
+      inverted_shift_key(KC_9, KC_2, &saved_mods_astr_1, record);
+
+      break;
+    }
+    // uses del_mods and add_mods, along with holding on to mods in a variable
+    case M_PLUS_3: {
+      static uint8_t saved_mods_plus_3 = 0;
+
+      if (record->event.pressed) {
+        saved_mods_plus_3 = get_mods() & MOD_MASK_SHIFT; // 0 if no shift, positive if shift pressed
+
+        if (saved_mods_plus_3) {
+          del_mods(saved_mods_plus_3);
+          send_keyboard_report();
+          register_code(KC_3);
+        } else {
+          register_code16(S(KC_EQL));
+        }
+      } else {
+        if (saved_mods_plus_3) {
+          unregister_code(KC_3);
+          if (is_shift_pressed) {
+            add_mods(saved_mods_plus_3);
+          }
+        } else {
+          unregister_code16(S(KC_EQL));
+        }
+      }
+      break;
+    }
+    // using SEND_STRING macro
+    case M_DQUO_5: {
+      static bool m_dquo_5_shifted = false;
+
+      if (record->event.pressed) {
+        if (get_mods() & MOD_MASK_SHIFT) {
+          m_dquo_5_shifted = true;
+          unregister_code(KC_LSHIFT);
+          SEND_STRING("5");
+        } else {
+          SEND_STRING("\"");
+        }
+      } else {
+        if (m_dquo_5_shifted && is_shift_pressed) {
+          register_code(KC_LSHIFT);
+        }
+      }
+      break;
+    }
+
     default:
       result = true;
       break;
