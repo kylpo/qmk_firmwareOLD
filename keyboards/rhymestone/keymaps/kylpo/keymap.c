@@ -18,7 +18,7 @@
  * Notes from kylpo:
  * Since this board only has a single Shift and Ctrl, by convention,
  *   only KC_LSHIFT, KC_LCTRL are checked against. If you add a Right,
- *   be sure to check using MOD_MASK_SHIFT and such.
+ *   be sure to check using MOD_MASK_SHIFT and MOD_MASK_CTRL.
  *
  * Also using only L_ because it simplifies code to only needing
  *   register/unregister, and not add_mods/del_mods/send_keyboard_report.
@@ -26,6 +26,7 @@
  */
 
 #include QMK_KEYBOARD_H
+#include "keymap.h"
 
 enum layer_number {
   _BASE = 0,
@@ -42,7 +43,7 @@ enum custom_keycodes {
   M_DQUO_5
 };
 
-bool is_shift_pressed = false;
+bool is_shift_key_pressed = false;
 
 // Defines for layer movement
 #define L_ALT MO(_ALTERNATE)
@@ -52,32 +53,6 @@ bool is_shift_pressed = false;
 #define KC_COMCTL  CTL_T(KC_COMMA)
 #define KC_SPCMD  CMD_T(KC_SPC)
 #define KC_QUOCMD  CMD_T(KC_QUOT)
-
-// Inverted shift status
-#define SHIFT_SWITCH(kc1, kc2) \
-if (record->event.pressed) { \
-  timer_timeout(); \
-  if (lshift || rshift) { \
-    unregister_code(KC_LSFT); \
-    unregister_code(kc2); \
-    register_code(kc2); \
-    add_to_prev(kc2); \
-  } else { \
-    register_code(KC_LSFT); \
-    unregister_code(kc1); \
-    register_code(kc1); \
-    add_to_prev(kc1); \
-  } \
-} else { \
-  unregister_code(kc1); \
-  unregister_code(kc2); \
-  unreg_prev(); \
-  if (lshift || rshift) \
-    register_code(KC_LSFT); \
-  else \
-    unregister_code(KC_LSFT); \
-} \
-return false;
 
 // https://beta.docs.qmk.fm/using-qmk/guides/keymap#keymap-and-layers-id-keymap-and-layers
 //
@@ -245,26 +220,26 @@ static void alternate_ctl(uint16_t to_keycode, uint16_t from_keycode, keyrecord_
   alternate_modifier_basic(MOD_BIT(KC_LCTL), to_keycode, from_keycode, record);
 }
 
-static void inverted_shift_key(uint16_t keycode_when_shift, uint16_t keycode_when_not_shift, uint8_t *mods, keyrecord_t *record) {
-  if (record->event.pressed) {
-    *mods = get_mods() & MOD_MASK_SHIFT; // 0 if no shift, positive if shift pressed
+// static void inverted_shift_key(uint16_t keycode_when_shift, uint16_t keycode_when_not_shift, uint8_t *mods, keyrecord_t *record) {
+//   if (record->event.pressed) {
+//     *mods = get_mods() & MOD_MASK_SHIFT; // 0 if no shift, positive if shift pressed
 
-    if (*mods) {
-      del_mods(*mods); // Remove any Shifts present
-      send_keyboard_report(); // send mods modifications
-      register_code(keycode_when_shift);
-    } else {
-      register_code16(S(keycode_when_not_shift));
-    }
-  } else {
-    if (*mods) {
-      unregister_code(keycode_when_shift);
-      add_mods(*mods);
-    } else {
-      unregister_code16(S(keycode_when_not_shift));
-    }
-  }
-}
+//     if (*mods) {
+//       del_mods(*mods); // Remove any Shifts present
+//       send_keyboard_report(); // send mods modifications
+//       register_code(keycode_when_shift);
+//     } else {
+//       register_code16(S(keycode_when_not_shift));
+//     }
+//   } else {
+//     if (*mods) {
+//       unregister_code(keycode_when_shift);
+//       add_mods(*mods);
+//     } else {
+//       unregister_code16(S(keycode_when_not_shift));
+//     }
+//   }
+// }
 
 // static void shift_unshift(uint16_t keycode_when_shift, uint16_t keycode_when_not_shift, uint8_t *mods, keyrecord_t *record) {
 //   if (record->event.pressed) {
@@ -315,14 +290,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   // `static` will retain the value between separate calls of the function
   static uint16_t dot_ctl_timer;
   static bool isClicking = false;
-  
+
+  bool lshifted = get_mods() & MOD_BIT(KC_LSHIFT);
   bool result = false;
   switch (keycode) {
     case KC_LSFT: {
       if (record->event.pressed){
-        is_shift_pressed = true;
+        is_shift_key_pressed = true;
       } else {
-        is_shift_pressed = false;
+        is_shift_key_pressed = false;
       }
       result = true;
 
@@ -421,68 +397,50 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // Simple register/unregisters
     case M_ASTR_1: {
       static bool m_astr_1_shifted = false;
-    
-      if (record->event.pressed) {
-        if (get_mods() & MOD_MASK_SHIFT) {
-          m_astr_1_shifted = true;
-          unregister_code(KC_LSHIFT);
-          register_code(KC_1);
-        } else {
-          register_code16(S(KC_8));
-        }
-      } else {
-        if (m_astr_1_shifted) {
-          unregister_code(KC_1);
-          if (is_shift_pressed) {
-            register_code(KC_LSHIFT);
-          }
-        } else {
-          unregister_code16(S(KC_8));
-        }
-      }
-
-      break;
+      ALT_SHIFT(SEND_STRING("*"), SEND_STRING("1"), m_astr_1_shifted)
     }
     case M_SLSH_2: {
-      static uint8_t saved_mods_astr_1 = 0;
-
-      // PLACEHOLDER
-      inverted_shift_key(KC_9, KC_2, &saved_mods_astr_1, record);
-
-      break;
+      static bool m_slsh_2_shifted = false;
+      ALT_SHIFT(SEND_STRING("/"), SEND_STRING("2"), m_slsh_2_shifted)
     }
-    // uses del_mods and add_mods, along with holding on to mods in a variable
     case M_PLUS_3: {
-      static uint8_t saved_mods_plus_3 = 0;
-
+      static bool m_plus_3_shifted = false;
       if (record->event.pressed) {
-        saved_mods_plus_3 = get_mods() & MOD_MASK_SHIFT; // 0 if no shift, positive if shift pressed
-
-        if (saved_mods_plus_3) {
-          del_mods(saved_mods_plus_3);
-          send_keyboard_report();
-          register_code(KC_3);
+        if (lshifted) {
+          m_plus_3_shifted = true;
+          unregister_code(KC_LSHIFT);
+          SEND_STRING("3");
         } else {
-          register_code16(S(KC_EQL));
+          SEND_STRING("+");
         }
       } else {
-        if (saved_mods_plus_3) {
-          unregister_code(KC_3);
-          if (is_shift_pressed) {
-            add_mods(saved_mods_plus_3);
-          }
-        } else {
-          unregister_code16(S(KC_EQL));
+        if (m_plus_3_shifted && is_shift_key_pressed) {
+          register_code(KC_LSHIFT);
         }
       }
       break;
     }
-    // using SEND_STRING macro
+    case M_QUO_4: {
+      static bool m_quo_4_shifted = false;
+      if (record->event.pressed) {
+        if (lshifted) {
+          m_quo_4_shifted = true;
+          unregister_code(KC_LSHIFT);
+          SEND_STRING("4");
+        } else {
+          SEND_STRING("'");
+        }
+      } else {
+        if (m_quo_4_shifted && is_shift_key_pressed) {
+          register_code(KC_LSHIFT);
+        }
+      }
+      break;
+    }
     case M_DQUO_5: {
       static bool m_dquo_5_shifted = false;
-
       if (record->event.pressed) {
-        if (get_mods() & MOD_MASK_SHIFT) {
+        if (lshifted) {
           m_dquo_5_shifted = true;
           unregister_code(KC_LSHIFT);
           SEND_STRING("5");
@@ -490,7 +448,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
           SEND_STRING("\"");
         }
       } else {
-        if (m_dquo_5_shifted && is_shift_pressed) {
+        if (m_dquo_5_shifted && is_shift_key_pressed) {
           register_code(KC_LSHIFT);
         }
       }
