@@ -35,7 +35,9 @@ enum layer_number {
 
 enum custom_keycodes {
   M_DOT_CTL = SAFE_RANGE,
+  M_SPC_CMD,
   M_COM_CTL,
+  M_UND_CMD,
   M_EXLM,
   M_ASTR,
   M_SLSH,
@@ -56,15 +58,8 @@ enum custom_keycodes {
   M_TICK
 };
 
-bool is_shift_key_pressed = false;
-
 // Defines for layer movement
 #define L_ALT MO(_ALTERNATE)
-
-// mod taps
-#define KC_COMCTL  CTL_T(KC_COMMA)
-#define KC_SPCMD  CMD_T(KC_SPC)
-#define KC_QUOCMD  CMD_T(KC_QUOT)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /* 
@@ -96,7 +91,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
           L_ALT/*KC_F*/,     KC_A,     KC_E,     KC_I,     KC_U,     KC_M,     KC_N,     KC_T,     KC_O,     KC_W,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-     M_DOT_CTL,     KC_P,     KC_G,     KC_V,     KC_X,     KC_J,     KC_K,     KC_Y,     KC_B, KC_SPCMD,
+     M_DOT_CTL,     KC_P,     KC_G,     KC_V,     KC_X,     KC_J,     KC_K,     KC_Y,     KC_B, M_SPC_CMD,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
           KC_Z,  XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_LSFT,    L_ALT,  XXXXXXX,  XXXXXXX,  XXXXXXX,     KC_Q
   //,---------------------------------------------------------------------------------------------------.
@@ -131,7 +126,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
         M_EXLM,    M_QUO,   M_DQUO,   M_MINS,   M_LPRN,   M_RPRN,  KC_LEFT,  KC_DOWN,  KC_RGHT,     M_AT,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-     M_COM_CTL,   M_AMPR,   M_PIPE,  M_EQUAL,   M_LBRC,   M_RBRC,  KC_BSPC,    M_DLR,   KC_DEL,KC_QUOCMD,
+     M_COM_CTL,   M_AMPR,   M_PIPE,  M_EQUAL,   M_LBRC,   M_RBRC,  KC_BSPC,    M_DLR,   KC_DEL,M_UND_CMD,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
         M_QUES,  XXXXXXX,  XXXXXXX,  XXXXXXX,  _______,  _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,    M_TICK
   //,---------------------------------------------------------------------------------------------------.
@@ -236,15 +231,19 @@ static void alternate_ctl(uint16_t to_keycode, uint16_t from_keycode, keyrecord_
 // Key macros
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   // `static` will retain the value between separate calls of the function
-  static uint16_t dot_ctl_timer;
-  static uint16_t com_ctl_timer;
+  static uint16_t dot_mod_tap_timer;
+  static uint16_t spc_mod_tap_timer;
+  static uint16_t com_mod_tap_timer;
+  static uint16_t und_mod_tap_timer;
   static bool is_clicking = false;
   static bool is_accelerated = false;
+  static bool is_shift_key_pressed = false;
 
   bool result = false;
   switch (keycode) {
     // Since we have an Alt layer with shift-inverted keys that unregister shift,
     //   track whether the shift key is pressed separately from get_mods().
+    // Also, ctrl + shift speeds up mouse movement.
     case KC_LSFT: {
       if (record->event.pressed){
         is_shift_key_pressed = true;
@@ -267,43 +266,50 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     //   Base layer
     // ------------------------------------------- 
 
-    case M_DOT_CTL:
+    // tap: Dot
+    // shift+tap: Colon
+    // hold: CTL
+    case M_DOT_CTL: {
       // mod-tap with different shift value.
       // See https://thomasbaart.nl/2018/12/09/qmk-basics-tap-and-hold-actions/
       // and https://github.com/gavinenns/qmk_firmware/blob/773dbdb095d4f48f39ce6ca1c0a9cb49a4cd1a52/keyboards/planck/keymaps/gavinenns/keymap.c#L158
       if(record->event.pressed) {
-        dot_ctl_timer = timer_read();
-        register_code(KC_LCTL); // Change the key to be held here
+        dot_mod_tap_timer = timer_read();
+        register_code(KC_LCTL); // hold
       } else {
-        unregister_code(KC_LCTL); // Change the key that was held here, too!
-        if (timer_elapsed(dot_ctl_timer) < TAPPING_TERM) {
+        unregister_code(KC_LCTL);
+        if (timer_elapsed(dot_mod_tap_timer) < TAPPING_TERM) {
           if (get_mods() & MOD_BIT(KC_LSHIFT)){
-            tap_code(KC_SCLN); // :
+            tap_code(KC_SCLN); // shift + tap
           } else {
-            tap_code(KC_DOT); // .
+            tap_code(KC_DOT); // tap
           }
         }
       }
-      break;
-    case M_COM_CTL:
-      // mod-tap with different shift value.
+      return false;
+    }
+    // tap: Space
+    // shift+tap: Return
+    // hold: CMD
+    case M_SPC_CMD: {
       if(record->event.pressed) {
-        com_ctl_timer = timer_read();
-        register_code(KC_LCTL); // Change the key to be held here
+        spc_mod_tap_timer = timer_read();
+        register_code(KC_LGUI); // hold
       } else {
-        unregister_code(KC_LCTL); // Change the key that was held here, too!
-        if (timer_elapsed(com_ctl_timer) < TAPPING_TERM) {
+        unregister_code(KC_LGUI);
+        if (timer_elapsed(spc_mod_tap_timer) < TAPPING_TERM) {
           if (get_mods() & MOD_BIT(KC_LSHIFT)){
             unregister_code(KC_LSHIFT);
-            tap_code(KC_SCLN); // ;
+            tap_code(KC_ENTER); // shift + tap
             register_code(KC_LSHIFT);
           } else {
-            tap_code(KC_COMMA); // ,
+            tap_code(KC_SPACE); // tap
           }
         }
       }
-      break;
 
+      return false;
+    }
     // Mouse click on CTRL + i
     case KC_I: {
       if(record->event.pressed) {
@@ -365,6 +371,48 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     //   Alt layer
     // ------------------------------------------- 
 
+    // tap: Comma
+    // shift+tap: Semicolon
+    // hold: CTL
+    case M_COM_CTL: {
+      if(record->event.pressed) {
+        com_mod_tap_timer = timer_read();
+        register_code(KC_LCTL); // hold
+      } else {
+        unregister_code(KC_LCTL);
+        if (timer_elapsed(com_mod_tap_timer) < TAPPING_TERM) {
+          if (get_mods() & MOD_BIT(KC_LSHIFT)){
+            unregister_code(KC_LSHIFT);
+            tap_code(KC_SCLN); // shift + tap
+            register_code(KC_LSHIFT);
+          } else {
+            tap_code(KC_COMMA); // tap
+          }
+        }
+      }
+      return false;
+    }  
+    // tap: Underscore
+    // shift+tap: Tilda
+    // hold: CMD
+    case M_UND_CMD: {
+      if(record->event.pressed) {
+        und_mod_tap_timer = timer_read();
+        register_code(KC_LGUI); // hold
+      } else {
+        unregister_code(KC_LGUI);
+        if (timer_elapsed(und_mod_tap_timer) < TAPPING_TERM) {
+          if (get_mods() & MOD_BIT(KC_LSHIFT)){
+            tap_code(KC_GRAVE); // shift + tap
+          } else {
+            register_code16(S(KC_MINUS)); // tap
+            unregister_code16(S(KC_MINUS));
+          }
+        }
+      }
+
+      return false;
+    }
     case M_EXLM: {
       static bool m_exlm_shifted = false;
       ALT_SHIFT(SEND_STRING("!"), SEND_STRING("0"), m_exlm_shifted)
