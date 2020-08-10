@@ -94,7 +94,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //,---------------------------------------------------------------------------------------------------.
          RESET/*XXXXXXX*/,     KC_D,     KC_H,     KC_C,  XXXXXXX,  XXXXXXX,     KC_L,     KC_S,     KC_R,  RESET/*XXXXXXX*/,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-          KC_F,     KC_A,     KC_E,     KC_I,     KC_U,     KC_M,     KC_N,     KC_T,     KC_O,     KC_W,
+          L_ALT/*KC_F*/,     KC_A,     KC_E,     KC_I,     KC_U,     KC_M,     KC_N,     KC_T,     KC_O,     KC_W,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
      M_DOT_CTL,     KC_P,     KC_G,     KC_V,     KC_X,     KC_J,     KC_K,     KC_Y,     KC_B, KC_SPCMD,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
@@ -238,7 +238,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   // `static` will retain the value between separate calls of the function
   static uint16_t dot_ctl_timer;
   static uint16_t com_ctl_timer;
-  static bool isClicking = false;
+  static bool is_clicking = false;
+  static bool is_accelerated = false;
 
   bool result = false;
   switch (keycode) {
@@ -247,11 +248,25 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case KC_LSFT: {
       if (record->event.pressed){
         is_shift_key_pressed = true;
+
+        if (get_mods() & MOD_BIT(KC_LCTL)) {
+          is_accelerated = true;
+          register_code(KC_ACL2);
+        }
       } else {
         is_shift_key_pressed = false;
+
+        if (is_accelerated) {
+          unregister_code(KC_ACL2);
+        }
       }
       return true;
     }
+
+    // ------------------------------------------- 
+    //   Base layer
+    // ------------------------------------------- 
+
     case M_DOT_CTL:
       // mod-tap with different shift value.
       // See https://thomasbaart.nl/2018/12/09/qmk-basics-tap-and-hold-actions/
@@ -271,6 +286,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       }
       break;
     case M_COM_CTL:
+      // mod-tap with different shift value.
       if(record->event.pressed) {
         com_ctl_timer = timer_read();
         register_code(KC_LCTL); // Change the key to be held here
@@ -293,7 +309,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       if(record->event.pressed) {
         // CTRL modifier makes this a mouse click
         if (get_mods() & MOD_BIT(KC_LCTL)) {
-          isClicking = true;
+          is_clicking = true;
 
           unregister_code(KC_LCTL);
           send_keyboard_report(); // send mods modifications
@@ -304,12 +320,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
           register_code(keycode);
         }
       } else {
-        if (isClicking) {
+        if (is_clicking) {
           unregister_code(KC_MS_BTN1);
 
           register_code(KC_LCTL);
 
-          isClicking = false;
+          is_clicking = false;
         } else {
           unregister_code(keycode);
         }
@@ -344,8 +360,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       alternate_ctl(KC_MS_WH_DOWN, keycode, record);
       // result = alternate_modifier(KC_LCTL, KC_MS_WH_DOWN, record);
       break;
-    
-    // Alt-layer
+
+    // ------------------------------------------- 
+    //   Alt layer
+    // ------------------------------------------- 
+
     case M_EXLM: {
       static bool m_exlm_shifted = false;
       ALT_SHIFT(SEND_STRING("!"), SEND_STRING("0"), m_exlm_shifted)
@@ -370,9 +389,37 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       static bool m_dquo_shifted = false;
       ALT_SHIFT(SEND_STRING("\""), SEND_STRING("5"), m_dquo_shifted)
     }
+    // Right Mouse click on CTRL. - or 6 otherwise.
     case M_MINS: {
       static bool m_mins_shifted = false;
-      ALT_SHIFT(SEND_STRING("-"), SEND_STRING("6"), m_mins_shifted)
+
+      if(record->event.pressed) {
+        // CTRL modifier makes this a mouse click
+        if (get_mods() & MOD_BIT(KC_LCTL)) {
+          is_clicking = true;
+          register_code(KC_MS_BTN1);
+        }
+        // Otherwise, handle as normal ALT_SHIFT key
+        else {
+          if (is_shift_key_pressed) {
+            m_mins_shifted = true;
+            unregister_code(KC_LSHIFT);
+            SEND_STRING("6");
+          } else {
+            SEND_STRING("-");
+          }
+        }
+      } else {
+        if (is_clicking) {
+          unregister_code(KC_MS_BTN1);
+          is_clicking = false;
+        } else {
+          if (m_mins_shifted && is_shift_key_pressed) { 
+            register_code(KC_LSHIFT); 
+          }
+        }
+      }
+      return false;
     }
     case M_LPRN: {
       static bool m_lprn_shifted = false;
