@@ -34,13 +34,26 @@ enum layer_number {
 };
 
 enum custom_keycodes {
-  DOT_CTL = SAFE_RANGE,
-  DOT_COLON,
-  M_ASTR_1,
-  M_SLSH_2,
-  M_PLUS_3,
-  M_QUO_4,
-  M_DQUO_5
+  M_DOT_CTL = SAFE_RANGE,
+  M_COM_CTL,
+  M_EXLM,
+  M_ASTR,
+  M_SLSH,
+  M_PLUS,
+  M_QUO,
+  M_DQUO,
+  M_MINS,
+  M_LPRN,
+  M_RPRN,
+  M_QUES,
+  M_AMPR,
+  M_PIPE,
+  M_EQUAL,
+  M_LBRC,
+  M_RBRC,
+  M_DLR,
+  M_AT,
+  M_TICK
 };
 
 bool is_shift_key_pressed = false;
@@ -49,27 +62,10 @@ bool is_shift_key_pressed = false;
 #define L_ALT MO(_ALTERNATE)
 
 // mod taps
-#define KC_DOTCTL  CTL_T(KC_DOT)
 #define KC_COMCTL  CTL_T(KC_COMMA)
 #define KC_SPCMD  CMD_T(KC_SPC)
 #define KC_QUOCMD  CMD_T(KC_QUOT)
 
-// https://beta.docs.qmk.fm/using-qmk/guides/keymap#keymap-and-layers-id-keymap-and-layers
-//
-// Keymap: 32 Layers                   Layer: action code matrix
-// -----------------                   ---------------------
-// stack of layers                     array_of_action_code[row][column]
-//        ____________ precedence               _______________________
-//       /           / | high                  / ESC / F1  / F2  / F3   ....
-//   31 /___________// |                      /-----/-----/-----/-----
-//   30 /___________// |                     / TAB /  Q  /  W  /  E   ....
-//   29 /___________/  |                    /-----/-----/-----/-----
-//    :   _:_:_:_:_:__ |               :   /LCtrl/  A  /  S  /  D   ....
-//    :  / : : : : : / |               :  /  :     :     :     :
-//    2 /___________// |               2 `--------------------------
-//    1 /___________// |               1 `--------------------------
-//    0 /___________/  V low           0 `--------------------------
-//
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /* 
  * ,----------------------------------.           ,----------------------------------.
@@ -81,8 +77,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * |------+------+------+------+------|           |------+------+------+------+------|
  * |   z  |      |      |      | SHFT |           |  ALT |      |      |      |   q  |
  * `----------------------------------'           `----------------------------------'
- */
- /* 
+ *
+ * SHIFT
  * ,----------------------------------.           ,----------------------------------.
  * |      |   D  |   H  |   C  |      |           |      |   L  |   S  |   R  |      |
  * |------+------+------+------+------|           |------+------+------+------+------|
@@ -96,28 +92,28 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_BASE] = LAYOUT( \
   // TODO: remove RESET when done coding
   //,---------------------------------------------------------------------------------------------------.
-         RESET/*XXXXXXX*/,     KC_D,     KC_H,     KC_C,  XXXXXXX,  XXXXXXX,     KC_L,     KC_S,     KC_R,  XXXXXXX,
+         RESET/*XXXXXXX*/,     KC_D,     KC_H,     KC_C,  XXXXXXX,  XXXXXXX,     KC_L,     KC_S,     KC_R,  RESET/*XXXXXXX*/,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-          L_ALT/*KC_F*/,     KC_A,     KC_E,     KC_I,     KC_U,     KC_M,     KC_N,     KC_T,     KC_O,     KC_W,
+          KC_F,     KC_A,     KC_E,     KC_I,     KC_U,     KC_M,     KC_N,     KC_T,     KC_O,     KC_W,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-       DOT_CTL,     KC_P,     KC_G,     KC_V,     KC_X,     KC_J,     KC_K,     KC_Y,     KC_B, KC_SPCMD,
+     M_DOT_CTL,     KC_P,     KC_G,     KC_V,     KC_X,     KC_J,     KC_K,     KC_Y,     KC_B, KC_SPCMD,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
           KC_Z,  XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_LSFT,    L_ALT,  XXXXXXX,  XXXXXXX,  XXXXXXX,     KC_Q
   //,---------------------------------------------------------------------------------------------------.
   ),
 
-/* 
+/*
+ * ALT 
  * ,----------------------------------.           ,----------------------------------.
  * |      |   *  |   /  |   +  |      |           |      |  ESC |  UP  |  ENT |      |
  * |------+------+------+------+------|           |------+------+------+------+------|
  * |   !  |   '  |   "  |   -  |   (  |           |   )  | LEFT | DOWN | RIGHT|   @  |
  * |------+------+------+------+------|           |------+------+------+------+------|
- * |   ,  |   &  |   |  |   =  |   [  |           |   ]  | BKSP |   ;  |  DEL |   _  |
+ * |   ,  |   &  |   |  |   =  |   [  |           |   ]  | BKSP |   $  |  DEL |   _  |
  * |------+------+------+------+------|           |------+------+------+------+------|
  * |   ?  |      |      |      | SHFT |           | ▓▓▓▓ |      |      |      |   `  |
  * `----------------------------------'           `----------------------------------'
- */
- /* 
+ *
  * ALT - SHIFT
  * ,----------------------------------.           ,----------------------------------.
  * |      |   1  |   2  |   3  |      |           |      |  ESC |  UP  |  ENT |      |
@@ -131,75 +127,76 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
   [_ALTERNATE] = LAYOUT( \
   //,---------------------------------------------------------------------------------------------------.
-       XXXXXXX, M_ASTR_1, M_SLSH_2, M_PLUS_3,  XXXXXXX,  XXXXXXX,   KC_ESC,    KC_UP,   KC_ENT,  XXXXXXX,
+       XXXXXXX,   M_ASTR,   M_SLSH,   M_PLUS,  XXXXXXX,  XXXXXXX,   KC_ESC,    KC_UP,   KC_ENT,  XXXXXXX,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-       KC_LBRC,     KC_4, M_DQUO_5,     KC_6,  KC_RBRC,  KC_MINS,  KC_LEFT,  KC_DOWN,  KC_RGHT,   KC_GRV,
+        M_EXLM,    M_QUO,   M_DQUO,   M_MINS,   M_LPRN,   M_RPRN,  KC_LEFT,  KC_DOWN,  KC_RGHT,     M_AT,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-     KC_COMCTL,     KC_7,     KC_8,     KC_9,     KC_0,   KC_EQL,  KC_BSPC,  KC_SCLN,   KC_DEL,KC_QUOCMD,
+     M_COM_CTL,   M_AMPR,   M_PIPE,  M_EQUAL,   M_LBRC,   M_RBRC,  KC_BSPC,    M_DLR,   KC_DEL,KC_QUOCMD,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
-      KC_SLASH,  XXXXXXX,  XXXXXXX,  XXXXXXX,  _______,  _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_BSLS
+        M_QUES,  XXXXXXX,  XXXXXXX,  XXXXXXX,  _______,  _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,    M_TICK
   //,---------------------------------------------------------------------------------------------------.
   )
 
 };
 
+/*
 #define maybe_add_weak_mods(keycode, mod)                               \
   if (keycode < QK_MODS_MAX &&                                          \
       (keycode & 0xff00) == QK_ ## mod)                                 \
     add_weak_mods(MOD_BIT(KC_ ## mod))
+*/
+// static bool alternate_modifier(uint16_t modifier, uint16_t keycode, keyrecord_t *record) {
+//   static bool in_alternate_modifier;
 
-static bool alternate_modifier(uint16_t modifier, uint16_t keycode, keyrecord_t *record) {
-  static bool in_alternate_modifier;
+//   /* when it's a key press and modifier state is pressed */
+//   if (record->event.pressed && (get_mods() & MOD_BIT(modifier))) {
+//     in_alternate_modifier = true;
 
-  /* when it's a key press and modifier state is pressed */
-  if (record->event.pressed && (get_mods() & MOD_BIT(modifier))) {
-    in_alternate_modifier = true;
+//     /* will send modifier up so that the os won't shift the keycode we will send */
+//     del_mods(MOD_BIT(modifier));
 
-    /* will send modifier up so that the os won't shift the keycode we will send */
-    del_mods(MOD_BIT(modifier));
+//     /* send mods if keycode needs it */
+//     maybe_add_weak_mods(keycode, LCTL);
+//     maybe_add_weak_mods(keycode, LSFT);
+//     maybe_add_weak_mods(keycode, LALT);
+//     maybe_add_weak_mods(keycode, LGUI);
+//     maybe_add_weak_mods(keycode, RCTL);
+//     maybe_add_weak_mods(keycode, RSFT);
+//     maybe_add_weak_mods(keycode, RALT);
+//     maybe_add_weak_mods(keycode, RGUI);
 
-    /* send mods if keycode needs it */
-    maybe_add_weak_mods(keycode, LCTL);
-    maybe_add_weak_mods(keycode, LSFT);
-    maybe_add_weak_mods(keycode, LALT);
-    maybe_add_weak_mods(keycode, LGUI);
-    maybe_add_weak_mods(keycode, RCTL);
-    maybe_add_weak_mods(keycode, RSFT);
-    maybe_add_weak_mods(keycode, RALT);
-    maybe_add_weak_mods(keycode, RGUI);
+//     /* send mods modifications */
+//     send_keyboard_report();
 
-    /* send mods modifications */
-    send_keyboard_report();
+//     /* send alternate key code */
+//     register_code(keycode);
 
-    /* send alternate key code */
-    register_code(keycode);
+//     /* we changed the internal state by releasing the modifier key, marked against
+//        as pressed so that we are back in the real state */
+//     add_mods(MOD_BIT(modifier));
 
-    /* we changed the internal state by releasing the modifier key, marked against
-       as pressed so that we are back in the real state */
-    add_mods(MOD_BIT(modifier));
+//     return false;
+//   }
 
-    return false;
-  }
+//   /* when releasing the key and we activated alternate modifier */
+//   if (!record->event.pressed && in_alternate_modifier) {
+//     in_alternate_modifier = false;
 
-  /* when releasing the key and we activated alternate modifier */
-  if (!record->event.pressed && in_alternate_modifier) {
-    in_alternate_modifier = false;
+//     /* release the alternate key */
+//     unregister_code(keycode);
 
-    /* release the alternate key */
-    unregister_code(keycode);
+//     /* make sure all mods we sat up earlier are released */
+//     clear_weak_mods();
 
-    /* make sure all mods we sat up earlier are released */
-    clear_weak_mods();
+//     /* send mods modification */
+//     send_keyboard_report();
 
-    /* send mods modification */
-    send_keyboard_report();
-
-    return false;
-  }
+//     return false;
+//   }
 
 
-  return true;
-}
+//   return true;
+// }
 
 static void alternate_modifier_basic(uint8_t modifier_mask, uint16_t to_keycode, uint16_t from_keycode, keyrecord_t *record) {
   if(record->event.pressed) {
@@ -219,55 +216,6 @@ static void alternate_modifier_basic(uint8_t modifier_mask, uint16_t to_keycode,
 static void alternate_ctl(uint16_t to_keycode, uint16_t from_keycode, keyrecord_t *record) {
   alternate_modifier_basic(MOD_BIT(KC_LCTL), to_keycode, from_keycode, record);
 }
-
-// static void inverted_shift_key(uint16_t keycode_when_shift, uint16_t keycode_when_not_shift, uint8_t *mods, keyrecord_t *record) {
-//   if (record->event.pressed) {
-//     *mods = get_mods() & MOD_MASK_SHIFT; // 0 if no shift, positive if shift pressed
-
-//     if (*mods) {
-//       del_mods(*mods); // Remove any Shifts present
-//       send_keyboard_report(); // send mods modifications
-//       register_code(keycode_when_shift);
-//     } else {
-//       register_code16(S(keycode_when_not_shift));
-//     }
-//   } else {
-//     if (*mods) {
-//       unregister_code(keycode_when_shift);
-//       add_mods(*mods);
-//     } else {
-//       unregister_code16(S(keycode_when_not_shift));
-//     }
-//   }
-// }
-
-// static void shift_unshift(uint16_t keycode_when_shift, uint16_t keycode_when_not_shift, uint8_t *mods, keyrecord_t *record) {
-//   if (record->event.pressed) {
-//     *mods = get_mods() & MOD_MASK_SHIFT; // 0 if no shift, positive if shift pressed
-
-//     if (*mods) {
-//       del_mods(*mods); // Remove any Shifts present
-//       send_keyboard_report(); // send mods modifications
-//       register_code(keycode_when_shift);
-//     } else {
-//       register_code16(S(keycode_when_not_shift));
-//     }
-//   } else {
-//     if (*mods) {
-//       unregister_code(keycode_when_shift);
-//       add_mods(*mods);
-//     } else {
-//       unregister_code16(S(keycode_when_not_shift));
-//     }
-//   }
-// }
-
-// shift_normal
-// shift_all
-// shift_switch
-
-// Different keycode when Ctrl is pressed
-
 
 /*
   Notes/docs:
@@ -289,36 +237,22 @@ static void alternate_ctl(uint16_t to_keycode, uint16_t from_keycode, keyrecord_
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   // `static` will retain the value between separate calls of the function
   static uint16_t dot_ctl_timer;
+  static uint16_t com_ctl_timer;
   static bool isClicking = false;
 
-  bool lshifted = get_mods() & MOD_BIT(KC_LSHIFT);
   bool result = false;
   switch (keycode) {
+    // Since we have an Alt layer with shift-inverted keys that unregister shift,
+    //   track whether the shift key is pressed separately from get_mods().
     case KC_LSFT: {
       if (record->event.pressed){
         is_shift_key_pressed = true;
       } else {
         is_shift_key_pressed = false;
       }
-      result = true;
-
-      break;
+      return true;
     }
-    case KC_DOT:
-      // if (record->event.pressed){
-      //   if (get_mods() & MOD_BIT(KC_LSHIFT) || get_mods() & MOD_BIT(KC_RSHIFT)){
-      //     register_code(KC_SCLN); // send :
-      //   } else {
-      //     register_code(KC_DOT); // send .
-      //   }
-      // } else {
-      //   unregister_code(KC_SCLN);
-      //   unregister_code(KC_DOT);
-      // }
-      // Only keeping this around for now to make Make happy about unused `alternate_modifier`
-      result = alternate_modifier(KC_LSFT, KC_COLON, record);
-      break;
-    case DOT_CTL:
+    case M_DOT_CTL:
       // mod-tap with different shift value.
       // See https://thomasbaart.nl/2018/12/09/qmk-basics-tap-and-hold-actions/
       // and https://github.com/gavinenns/qmk_firmware/blob/773dbdb095d4f48f39ce6ca1c0a9cb49a4cd1a52/keyboards/planck/keymaps/gavinenns/keymap.c#L158
@@ -328,7 +262,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       } else {
         unregister_code(KC_LCTL); // Change the key that was held here, too!
         if (timer_elapsed(dot_ctl_timer) < TAPPING_TERM) {
-          if (get_mods() & MOD_BIT(KC_LSHIFT) || get_mods() & MOD_BIT(KC_RSHIFT)){
+          if (get_mods() & MOD_BIT(KC_LSHIFT)){
             tap_code(KC_SCLN); // :
           } else {
             tap_code(KC_DOT); // .
@@ -336,7 +270,25 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
       }
       break;
+    case M_COM_CTL:
+      if(record->event.pressed) {
+        com_ctl_timer = timer_read();
+        register_code(KC_LCTL); // Change the key to be held here
+      } else {
+        unregister_code(KC_LCTL); // Change the key that was held here, too!
+        if (timer_elapsed(com_ctl_timer) < TAPPING_TERM) {
+          if (get_mods() & MOD_BIT(KC_LSHIFT)){
+            unregister_code(KC_LSHIFT);
+            tap_code(KC_SCLN); // ;
+            register_code(KC_LSHIFT);
+          } else {
+            tap_code(KC_COMMA); // ,
+          }
+        }
+      }
+      break;
 
+    // Mouse click on CTRL + i
     case KC_I: {
       if(record->event.pressed) {
         // CTRL modifier makes this a mouse click
@@ -394,67 +346,78 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       break;
     
     // Alt-layer
-    // Simple register/unregisters
-    case M_ASTR_1: {
-      static bool m_astr_1_shifted = false;
-      ALT_SHIFT(SEND_STRING("*"), SEND_STRING("1"), m_astr_1_shifted)
+    case M_EXLM: {
+      static bool m_exlm_shifted = false;
+      ALT_SHIFT(SEND_STRING("!"), SEND_STRING("0"), m_exlm_shifted)
     }
-    case M_SLSH_2: {
-      static bool m_slsh_2_shifted = false;
-      ALT_SHIFT(SEND_STRING("/"), SEND_STRING("2"), m_slsh_2_shifted)
+    case M_ASTR: {
+      static bool m_astr_shifted = false;
+      ALT_SHIFT(SEND_STRING("*"), SEND_STRING("1"), m_astr_shifted)
     }
-    case M_PLUS_3: {
-      static bool m_plus_3_shifted = false;
-      if (record->event.pressed) {
-        if (lshifted) {
-          m_plus_3_shifted = true;
-          unregister_code(KC_LSHIFT);
-          SEND_STRING("3");
-        } else {
-          SEND_STRING("+");
-        }
-      } else {
-        if (m_plus_3_shifted && is_shift_key_pressed) {
-          register_code(KC_LSHIFT);
-        }
-      }
-      break;
+    case M_SLSH: {
+      static bool m_slsh_shifted = false;
+      ALT_SHIFT(SEND_STRING("/"), SEND_STRING("2"), m_slsh_shifted)
     }
-    case M_QUO_4: {
-      static bool m_quo_4_shifted = false;
-      if (record->event.pressed) {
-        if (lshifted) {
-          m_quo_4_shifted = true;
-          unregister_code(KC_LSHIFT);
-          SEND_STRING("4");
-        } else {
-          SEND_STRING("'");
-        }
-      } else {
-        if (m_quo_4_shifted && is_shift_key_pressed) {
-          register_code(KC_LSHIFT);
-        }
-      }
-      break;
+    case M_PLUS: {
+      static bool m_plus_shifted = false;
+      ALT_SHIFT(SEND_STRING("+"), SEND_STRING("3"), m_plus_shifted)
     }
-    case M_DQUO_5: {
-      static bool m_dquo_5_shifted = false;
-      if (record->event.pressed) {
-        if (lshifted) {
-          m_dquo_5_shifted = true;
-          unregister_code(KC_LSHIFT);
-          SEND_STRING("5");
-        } else {
-          SEND_STRING("\"");
-        }
-      } else {
-        if (m_dquo_5_shifted && is_shift_key_pressed) {
-          register_code(KC_LSHIFT);
-        }
-      }
-      break;
+    case M_QUO: {
+      static bool m_quo_shifted = false;
+      ALT_SHIFT(SEND_STRING("'"), SEND_STRING("4"), m_quo_shifted)
     }
-
+    case M_DQUO: {
+      static bool m_dquo_shifted = false;
+      ALT_SHIFT(SEND_STRING("\""), SEND_STRING("5"), m_dquo_shifted)
+    }
+    case M_MINS: {
+      static bool m_mins_shifted = false;
+      ALT_SHIFT(SEND_STRING("-"), SEND_STRING("6"), m_mins_shifted)
+    }
+    case M_LPRN: {
+      static bool m_lprn_shifted = false;
+      ALT_SHIFT(SEND_STRING("("), SEND_STRING("{"), m_lprn_shifted)
+    }
+    case M_RPRN: {
+      static bool m_rprn_shifted = false;
+      ALT_SHIFT(SEND_STRING(")"), SEND_STRING("}"), m_rprn_shifted)
+    }
+    case M_QUES: {
+      static bool m_ques_shifted = false;
+      ALT_SHIFT(SEND_STRING("?"), SEND_STRING("^"), m_ques_shifted)
+    }
+    case M_AMPR: {
+      static bool m_ampr_shifted = false;
+      ALT_SHIFT(SEND_STRING("&"), SEND_STRING("7"), m_ampr_shifted)
+    }
+    case M_PIPE: {
+      static bool m_pipe_shifted = false;
+      ALT_SHIFT(SEND_STRING("|"), SEND_STRING("8"), m_pipe_shifted)
+    }
+    case M_EQUAL: {
+      static bool m_equal_shifted = false;
+      ALT_SHIFT(SEND_STRING("="), SEND_STRING("9"), m_equal_shifted)
+    }
+    case M_LBRC: {
+      static bool m_lbrc_shifted = false;
+      ALT_SHIFT(SEND_STRING("["), SEND_STRING("<"), m_lbrc_shifted)
+    }
+    case M_RBRC: {
+      static bool m_rbrc_shifted = false;
+      ALT_SHIFT(SEND_STRING("]"), SEND_STRING(">"), m_rbrc_shifted)
+    }
+    case M_DLR: {
+      static bool m_dlr_shifted = false;
+      ALT_SHIFT(SEND_STRING("$"), SEND_STRING("\%"), m_dlr_shifted)
+    }
+    case M_AT: {
+      static bool m_at_shifted = false;
+      ALT_SHIFT(SEND_STRING("@"), SEND_STRING("#"), m_at_shifted)
+    }
+    case M_TICK: {
+      static bool m_tick_shifted = false;
+      ALT_SHIFT(SEND_STRING("`"), SEND_STRING("\\"), m_tick_shifted)
+    }
     default:
       result = true;
       break;

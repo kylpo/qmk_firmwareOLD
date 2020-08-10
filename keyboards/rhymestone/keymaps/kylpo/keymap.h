@@ -4,7 +4,7 @@
 
 #define ALT_SHIFT(alt_string_macro, shift_string_macro, shifted) \
 if (record->event.pressed) { \
-  if (get_mods() & MOD_BIT(KC_LSHIFT)) { \
+  if (is_shift_key_pressed) { \
     shifted = true; \
     unregister_code(KC_LSHIFT); \
     shift_string_macro; \
