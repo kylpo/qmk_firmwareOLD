@@ -89,7 +89,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //,---------------------------------------------------------------------------------------------------.
          RESET/*XXXXXXX*/,     KC_D,     KC_H,     KC_C,  XXXXXXX,  XXXXXXX,     KC_L,     KC_S,     KC_R,  RESET/*XXXXXXX*/,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-          L_ALT/*KC_F*/,     KC_A,     KC_E,     KC_I,     KC_U,     KC_M,     KC_N,     KC_T,     KC_O,     KC_W,
+          KC_F,     KC_A,     KC_E,     KC_I,     KC_U,     KC_M,     KC_N,     KC_T,     KC_O,     KC_W,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
      M_DOT_CTL,     KC_P,     KC_G,     KC_V,     KC_X,     KC_J,     KC_K,     KC_Y,     KC_B, M_SPC_CMD,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
@@ -131,106 +131,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         M_QUES,  XXXXXXX,  XXXXXXX,  XXXXXXX,  _______,  _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,    M_TICK
   //,---------------------------------------------------------------------------------------------------.
   )
-
 };
-
-/*
-#define maybe_add_weak_mods(keycode, mod)                               \
-  if (keycode < QK_MODS_MAX &&                                          \
-      (keycode & 0xff00) == QK_ ## mod)                                 \
-    add_weak_mods(MOD_BIT(KC_ ## mod))
-*/
-// static bool alternate_modifier(uint16_t modifier, uint16_t keycode, keyrecord_t *record) {
-//   static bool in_alternate_modifier;
-
-//   /* when it's a key press and modifier state is pressed */
-//   if (record->event.pressed && (get_mods() & MOD_BIT(modifier))) {
-//     in_alternate_modifier = true;
-
-//     /* will send modifier up so that the os won't shift the keycode we will send */
-//     del_mods(MOD_BIT(modifier));
-
-//     /* send mods if keycode needs it */
-//     maybe_add_weak_mods(keycode, LCTL);
-//     maybe_add_weak_mods(keycode, LSFT);
-//     maybe_add_weak_mods(keycode, LALT);
-//     maybe_add_weak_mods(keycode, LGUI);
-//     maybe_add_weak_mods(keycode, RCTL);
-//     maybe_add_weak_mods(keycode, RSFT);
-//     maybe_add_weak_mods(keycode, RALT);
-//     maybe_add_weak_mods(keycode, RGUI);
-
-//     /* send mods modifications */
-//     send_keyboard_report();
-
-//     /* send alternate key code */
-//     register_code(keycode);
-
-//     /* we changed the internal state by releasing the modifier key, marked against
-//        as pressed so that we are back in the real state */
-//     add_mods(MOD_BIT(modifier));
-
-//     return false;
-//   }
-
-//   /* when releasing the key and we activated alternate modifier */
-//   if (!record->event.pressed && in_alternate_modifier) {
-//     in_alternate_modifier = false;
-
-//     /* release the alternate key */
-//     unregister_code(keycode);
-
-//     /* make sure all mods we sat up earlier are released */
-//     clear_weak_mods();
-
-//     /* send mods modification */
-//     send_keyboard_report();
-
-//     return false;
-//   }
-
-
-//   return true;
-// }
-
-static void alternate_modifier_basic(uint8_t modifier_mask, uint16_t to_keycode, uint16_t from_keycode, keyrecord_t *record) {
-  if(record->event.pressed) {
-    if (get_mods() & modifier_mask){
-      del_mods(modifier_mask);
-      register_code(to_keycode);
-      add_mods(modifier_mask);
-    } else {
-      register_code(from_keycode);
-    }
-  } else {
-    unregister_code(to_keycode);
-    unregister_code(from_keycode);
-  }
-}
-
-static void alternate_ctl(uint16_t to_keycode, uint16_t from_keycode, keyrecord_t *record) {
-  alternate_modifier_basic(MOD_BIT(KC_LCTL), to_keycode, from_keycode, record);
-}
-
-/*
-  Notes/docs:
-
-  SEND_STRING() - type out a string (C-level preprocessor macro)
-  register_code(KC_) - send KC_ keydown event
-  unregister_code(KC_) - send KC_ keyup event
-  tap_code(KC_) - same as register_code(KC_); unregister_code(KC_);
-  clear_keyboard() - clear all mods and keys currently pressed
-  clear_mods() - clear all mods currently pressed
-
-  return `true` to indicate to the caller that the key press we just processed should continue to be processed as normal
-
-  See also: action_util.c
-  https://github.com/qmk/qmk_firmware/blob/master/tmk_core/common/action_util.c
-*/
 
 // Key macros
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-  // `static` will retain the value between separate calls of the function
   static uint16_t dot_mod_tap_timer;
   static uint16_t spc_mod_tap_timer;
   static uint16_t com_mod_tap_timer;
@@ -239,7 +143,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   static bool is_accelerated = false;
   static bool is_shift_key_pressed = false;
 
-  bool result = false;
   switch (keycode) {
     // Since we have an Alt layer with shift-inverted keys that unregister shift,
     //   track whether the shift key is pressed separately from get_mods().
@@ -270,9 +173,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // shift+tap: Colon
     // hold: CTL
     case M_DOT_CTL: {
-      // mod-tap with different shift value.
-      // See https://thomasbaart.nl/2018/12/09/qmk-basics-tap-and-hold-actions/
-      // and https://github.com/gavinenns/qmk_firmware/blob/773dbdb095d4f48f39ce6ca1c0a9cb49a4cd1a52/keyboards/planck/keymaps/gavinenns/keymap.c#L158
       if(record->event.pressed) {
         dot_mod_tap_timer = timer_read();
         register_code(KC_LCTL); // hold
@@ -307,7 +207,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
           }
         }
       }
-
       return false;
     }
     // Mouse click on CTRL + i
@@ -336,36 +235,30 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
           unregister_code(keycode);
         }
       }
-      break;
+      return false;
     }
 
     // Mouse movement when CTL held for S,T,N,O
-    case KC_S:
-      alternate_ctl(KC_MS_UP, keycode, record);
-      // result = alternate_modifier(KC_LCTL, KC_MS_UP, record);
-      break;
-    case KC_T:
-      alternate_ctl(KC_MS_DOWN, keycode, record);
-      // result = alternate_modifier(KC_LCTL, KC_MS_DOWN, record);
-      break;
-    case KC_N:
-      alternate_ctl(KC_MS_LEFT, keycode, record);
-      // result = alternate_modifier(KC_LCTL, KC_MS_LEFT, record);
-      break;
-    case KC_O:
-      alternate_ctl(KC_MS_RIGHT, keycode, record);
-      // result = alternate_modifier(KC_LCTL, KC_MS_RIGHT, record);
-      break;
-    
+    case KC_S: {
+      WHEN_CTRL(KC_MS_UP)
+    }
+    case KC_T: {
+      WHEN_CTRL(KC_MS_DOWN)
+    }
+    case KC_N: {
+      WHEN_CTRL(KC_MS_LEFT)
+    }
+    case KC_O: {
+      WHEN_CTRL(KC_MS_RIGHT)
+    }
+
     // Mouse scroll when CTL held for M,J
-    case KC_M:
-      alternate_ctl(KC_MS_WH_UP, keycode, record);
-      // result = alternate_modifier(KC_LCTL, KC_MS_WH_UP, record);
-      break;
-    case KC_J:
-      alternate_ctl(KC_MS_WH_DOWN, keycode, record);
-      // result = alternate_modifier(KC_LCTL, KC_MS_WH_DOWN, record);
-      break;
+    case KC_M: {
+      WHEN_CTRL(KC_MS_WH_UP)
+    }
+    case KC_J: {
+      WHEN_CTRL(KC_MS_WH_DOWN)
+    }
 
     // ------------------------------------------- 
     //   Alt layer
@@ -513,10 +406,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       static bool m_tick_shifted = false;
       ALT_SHIFT(SEND_STRING("`"), SEND_STRING("\\"), m_tick_shifted)
     }
-    default:
-      result = true;
-      break;
+    default: {
+      return true;
+    }
   }
-
-  return result;
 }

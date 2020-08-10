@@ -35,3 +35,30 @@ make rhymestone:kylpo && cp .build/rhymestone_rev1_kylpo.hex ~/Downloads
 ```
 
 Then flash it with QMK Toolbox
+
+### Code notes
+- `SEND_STRING()` - type out a string (C-level preprocessor macro)
+- `register_code(KC_)` - send KC_ keydown event
+- `unregister_code(KC_)` - send KC_ keyup event
+- `tap_code(KC_)` - same as register_code(KC_); unregister_code(KC_);
+- `clear_keyboard()` - clear all mods and keys currently pressed
+- `clear_mods()` - clear all mods currently pressed
+- return `true` in `process_record_user()` to indicate to the caller that the key press we just processed should continue to be processed as normal
+- `static` will retain the value between separate calls of the function
+
+See also: [action_util.c](https://github.com/qmk/qmk_firmware/blob/master/tmk_core/common/action_util.c)
+
+### Resources
+- [Keycode Full List - QMK](https://beta.docs.qmk.fm/using-qmk/simple-keycodes/keycodes)
+- [Mouse Keys - QMK](https://beta.docs.qmk.fm/using-qmk/advanced-keycodes/feature_mouse_keys)
+- [Macros - QMK](https://beta.docs.qmk.fm/using-qmk/advanced-keycodes/feature_macros)
+
+Alt-shifted:
+- [gavinenns/qmk_firmware](https://github.com/gavinenns/qmk_firmware/blob/773dbdb095d4f48f39ce6ca1c0a9cb49a4cd1a52/keyboards/planck/keymaps/gavinenns/keymap.c#L158)
+- [qmk_firmware/users/spacebarracecar](https://github.com/qmk/qmk_firmware/tree/master/users/spacebarracecar)
+- https://github.com/qmk/qmk_firmware/issues/6705
+
+Mod-tap:
+- [QMK Basics: Tap and hold actions: Tap into your modifiers](https://thomasbaart.nl/2018/12/09/qmk-basics-tap-and-hold-actions/#mod-tap)
+- 
+- [Custom modified keycode handling PR](https://github.com/qmk/qmk_firmware/pull/4795/files)
