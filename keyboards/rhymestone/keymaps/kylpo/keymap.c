@@ -252,11 +252,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       WHEN_CTRL(KC_MS_RIGHT)
     }
 
-    // Mouse scroll when CTL held for M,J
-    case KC_M: {
+    // Mouse scroll when CTL held for H,E
+    case KC_H: {
       WHEN_CTRL(KC_MS_WH_UP)
     }
-    case KC_J: {
+    case KC_E: {
       WHEN_CTRL(KC_MS_WH_DOWN)
     }
 
