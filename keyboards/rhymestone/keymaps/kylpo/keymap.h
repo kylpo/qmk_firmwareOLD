@@ -23,7 +23,7 @@ return false;
 // Inspired by https://github.com/qmk/qmk_firmware/tree/master/users/spacebarracecar
 #define WHEN_CTRL(kc) \
 if(record->event.pressed) { \
-  if (get_mods() & MOD_BIT(KC_LCTL)) {\
+  if (is_ctl_key_pressed) {\
     register_code(kc); \
   } else { \
     register_code(keycode); \

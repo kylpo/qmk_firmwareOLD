@@ -55,7 +55,9 @@ enum custom_keycodes {
   M_RBRC,
   M_DLR,
   M_AT,
-  M_TICK
+  M_TICK,
+  M_ESC,
+  M_ENT
 };
 
 // Defines for layer movement
@@ -122,7 +124,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
   [_ALTERNATE] = LAYOUT( \
   //,---------------------------------------------------------------------------------------------------.
-       XXXXXXX,   M_ASTR,   M_SLSH,   M_PLUS,  XXXXXXX,  XXXXXXX,   KC_ESC,    KC_UP,   KC_ENT,  XXXXXXX,
+       XXXXXXX,   M_ASTR,   M_SLSH,   M_PLUS,  XXXXXXX,  XXXXXXX,    M_ESC,    KC_UP,    M_ENT,  XXXXXXX,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
         M_EXLM,    M_QUO,   M_DQUO,   M_MINS,   M_LPRN,   M_RPRN,  KC_LEFT,  KC_DOWN,  KC_RGHT,     M_AT,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
@@ -142,6 +144,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   static bool is_clicking = false;
   static bool is_accelerated = false;
   static bool is_shift_key_pressed = false;
+  // Track ctrl being pressed for when mouse dragging occurs,
+  // and we still want to be able to move the mouse.
+  static bool is_ctl_key_pressed = false;
 
   switch (keycode) {
     // Since we have an Alt layer with shift-inverted keys that unregister shift,
@@ -151,7 +156,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       if (record->event.pressed){
         is_shift_key_pressed = true;
 
-        if (get_mods() & MOD_BIT(KC_LCTL)) {
+        if (is_ctl_key_pressed) {
           is_accelerated = true;
           register_code(KC_ACL2);
         }
@@ -176,8 +181,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       if(record->event.pressed) {
         dot_mod_tap_timer = timer_read();
         register_code(KC_LCTL); // hold
+        is_ctl_key_pressed = true;
+
+        // set acceleration when shift is already held
+        if (is_shift_key_pressed) {
+          register_code(KC_ACL2);
+          is_accelerated = true;
+        }
       } else {
         unregister_code(KC_LCTL);
+        is_ctl_key_pressed = false;
         if (timer_elapsed(dot_mod_tap_timer) < TAPPING_TERM) {
           if (get_mods() & MOD_BIT(KC_LSHIFT)){
             tap_code(KC_SCLN); // shift + tap
@@ -271,8 +284,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       if(record->event.pressed) {
         com_mod_tap_timer = timer_read();
         register_code(KC_LCTL); // hold
+        is_ctl_key_pressed = true;
+
+        // set acceleration when shift is already held
+        if (is_shift_key_pressed) {
+          register_code(KC_ACL2);
+          is_accelerated = true;
+        }
       } else {
         unregister_code(KC_LCTL);
+        is_ctl_key_pressed = false;
         if (timer_elapsed(com_mod_tap_timer) < TAPPING_TERM) {
           if (get_mods() & MOD_BIT(KC_LSHIFT)){
             unregister_code(KC_LSHIFT);
@@ -405,6 +426,23 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case M_TICK: {
       static bool m_tick_shifted = false;
       ALT_SHIFT(SEND_STRING("`"), SEND_STRING("\\"), m_tick_shifted)
+    }
+    case M_ESC: {
+      if (record->event.pressed) { 
+        if (is_shift_key_pressed) { 
+          register_code(KC_TAB);
+        } else { 
+          register_code(KC_ESC);
+        }
+      } else { 
+        unregister_code(KC_TAB);
+        unregister_code(KC_ESC);
+      } 
+      return false;
+    }
+    case M_ENT: {
+      static bool m_ent_shifted = false;
+      ALT_SHIFT(SEND_STRING(SS_TAP(X_ENT)), SEND_STRING(SS_TAP(X_TAB)), m_ent_shifted);
     }
     default: {
       return true;
