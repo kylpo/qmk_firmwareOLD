@@ -36,6 +36,8 @@ make rhymestone:kylpo && cp .build/rhymestone_rev1_kylpo.hex ~/Downloads
 
 Then flash it with QMK Toolbox
 
+Kinetic PR: https://github.com/qmk/qmk_firmware/pull/6739/files
+
 ### To Do
 Use Leader key for media controls?
 - [QMK Basics: Leader Key, using sequences for shortcuts](https://thomasbaart.nl/2018/12/20/qmk-basics-leader-key/#how-the-leader-key-works)
