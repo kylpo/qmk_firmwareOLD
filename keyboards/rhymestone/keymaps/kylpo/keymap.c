@@ -87,7 +87,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `----------------------------------'           `----------------------------------'
  */
   [_BASE] = LAYOUT( \
-  // TODO: remove RESET when done coding
+  // TODO: remove RESETs when done coding
   //,---------------------------------------------------------------------------------------------------.
          RESET/*XXXXXXX*/,     KC_D,     KC_H,     KC_C,  XXXXXXX,  XXXXXXX,     KC_L,     KC_S,     KC_R,  RESET/*XXXXXXX*/,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
@@ -213,7 +213,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         if (timer_elapsed(spc_mod_tap_timer) < TAPPING_TERM) {
           if (get_mods() & MOD_BIT(KC_LSHIFT)){
             unregister_code(KC_LSHIFT);
-            tap_code(KC_ENTER); // shift + tap
+            tap_code(KC_RETURN); // shift + tap
             register_code(KC_LSHIFT);
           } else {
             tap_code(KC_SPACE); // tap
@@ -271,6 +271,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
     case KC_E: {
       WHEN_CTRL(KC_MS_WH_DOWN)
+    }
+
+    // Media
+    case KC_U: {
+      WHEN_CTRL(KC__VOLUP)
+    }
+    case KC_X: {
+      WHEN_CTRL(KC__VOLDOWN)
     }
 
     // ------------------------------------------- 

@@ -24,8 +24,8 @@
 /* from https://www.reddit.com/r/olkb/comments/72u8ou/qmk_mouse_keys_rock/ */
 // #define MOUSEKEY_INTERVAL 16
 // #define MOUSEKEY_DELAY 0
-// #define MOUSEKEY_TIME_TO_MAX 60
-// #define MOUSEKEY_MAX_SPEED 5
+// #define MOUSEKEY_TIME_TO_MAX 30
+// #define MOUSEKEY_MAX_SPEED 4
 // #define MOUSEKEY_WHEEL_DELAY 0
 
 // Constant speeds
@@ -35,9 +35,11 @@
 
 #define MK_C_OFFSET_UNMOD 4 // cursor offset per movement (default: 16)
 #define MK_C_INTERVAL_UNMOD 16 // time between cursor movements (default: 16)
-#define MK_C_OFFSET_2 20
+#define MK_C_OFFSET_2 24
 
 // #define MK_COMBINED
+
+// #define MOUSEKEY_MOVE_MAX 40
 
 // If you use the HashTwenty(alpha), please enable USE_HASHTWENTY
 // #define USE_HASHTWENTY
