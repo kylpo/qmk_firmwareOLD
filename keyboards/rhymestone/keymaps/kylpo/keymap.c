@@ -97,7 +97,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
      M_DOT_CTL,     KC_P,     KC_G,     KC_V,     KC_X,     KC_J,     KC_K,     KC_Y,     KC_B, M_SPC_CMD,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
-          KC_Z,  XXXXXXX,  XXXXXXX,  L_MOUSE,  KC_LSFT,    L_ALT,  XXXXXXX,  XXXXXXX,  XXXXXXX,     KC_Q
+          KC_Z,  XXXXXXX,  XXXXXXX,  L_MOUSE,  KC_LSFT,    L_ALT,  L_MOUSE,  XXXXXXX,  XXXXXXX,     KC_Q
   //,---------------------------------------------------------------------------------------------------.
   ),
 
@@ -163,11 +163,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //,---------------------------------------------------------------------------------------------------.
        XXXXXXX,  XXXXXXX,  KC_WH_U,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_MS_U,  XXXXXXX,  XXXXXXX,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-       XXXXXXX,  KC_ACL1,  KC_WH_D,  KC_ACL2,  XXXXXXX,  XXXXXXX,  KC_MS_L,  KC_MS_D,  KC_MS_R,  XXXXXXX,
+       XXXXXXX,  KC_ACL1,  KC_WH_D,  KC_BTN1,  XXXXXXX,  XXXXXXX,  KC_MS_L,  KC_MS_D,  KC_MS_R,  XXXXXXX,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
        _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  _______,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
-       XXXXXXX,  XXXXXXX,  XXXXXXX,  _______,  _______,  KC_BTN1,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX
+       XXXXXXX,  XXXXXXX,  XXXXXXX,  _______,  _______,  XXXXXXX,  _______,  XXXXXXX,  XXXXXXX,  XXXXXXX
   //,---------------------------------------------------------------------------------------------------.
   )
 };
@@ -179,7 +179,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   static uint16_t com_mod_tap_timer;
   static uint16_t und_mod_tap_timer;
   static bool is_clicking = false;
-  static bool is_accelerated = false;
+  // static bool is_accelerated = false;
   static bool is_shift_key_pressed = false;
   // Track ctrl being pressed for when mouse dragging occurs,
   // and we still want to be able to move the mouse.
@@ -193,16 +193,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       if (record->event.pressed){
         is_shift_key_pressed = true;
 
-        if (is_ctl_key_pressed) {
-          is_accelerated = true;
+        // if (is_ctl_key_pressed) {
+          // is_accelerated = true;
           register_code(KC_ACL2);
-        }
+        // }
       } else {
         is_shift_key_pressed = false;
 
-        if (is_accelerated) {
+        // if (is_accelerated) {
           unregister_code(KC_ACL2);
-        }
+        // }
       }
       return true;
     }
@@ -221,10 +221,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         is_ctl_key_pressed = true;
 
         // set acceleration when shift is already held
-        if (is_shift_key_pressed) {
-          register_code(KC_ACL2);
-          is_accelerated = true;
-        }
+        // if (is_shift_key_pressed) {
+          // register_code(KC_ACL2);
+          // is_accelerated = true;
+        // }
       } else {
         unregister_code(KC_LCTL);
         is_ctl_key_pressed = false;
@@ -250,7 +250,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         if (timer_elapsed(spc_mod_tap_timer) < TAPPING_TERM) {
           if (get_mods() & MOD_BIT(KC_LSHIFT)){
             unregister_code(KC_LSHIFT);
-            tap_code(KC_RETURN); // shift + tap
+            tap_code(KC_ENTER); // shift + tap
             register_code(KC_LSHIFT);
           } else {
             tap_code(KC_SPACE); // tap
@@ -332,10 +332,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         is_ctl_key_pressed = true;
 
         // set acceleration when shift is already held
-        if (is_shift_key_pressed) {
-          register_code(KC_ACL2);
-          is_accelerated = true;
-        }
+        // if (is_shift_key_pressed) {
+          // register_code(KC_ACL2);
+          // is_accelerated = true;
+        // }
       } else {
         unregister_code(KC_LCTL);
         is_ctl_key_pressed = false;
