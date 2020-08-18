@@ -31,6 +31,7 @@
 enum layer_number {
   _BASE = 0,
   _ALTERNATE,
+  _MOUSE
 };
 
 enum custom_keycodes {
@@ -62,6 +63,7 @@ enum custom_keycodes {
 
 // Defines for layer movement
 #define L_ALT MO(_ALTERNATE)
+#define L_MOUSE MO(_MOUSE)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /* 
@@ -95,7 +97,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
      M_DOT_CTL,     KC_P,     KC_G,     KC_V,     KC_X,     KC_J,     KC_K,     KC_Y,     KC_B, M_SPC_CMD,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
-          KC_Z,  XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_LSFT,    L_ALT,  XXXXXXX,  XXXXXXX,  XXXXXXX,     KC_Q
+          KC_Z,  XXXXXXX,  XXXXXXX,  L_MOUSE,  KC_LSFT,    L_ALT,  XXXXXXX,  XXXXXXX,  XXXXXXX,     KC_Q
   //,---------------------------------------------------------------------------------------------------.
   ),
 
@@ -104,11 +106,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * ,----------------------------------.           ,----------------------------------.
  * |      |   *  |   /  |   +  |      |           |      |  ESC |  UP  |  ENT |      |
  * |------+------+------+------+------|           |------+------+------+------+------|
- * |   !  |   '  |   "  |   -  |   (  |           |   )  | LEFT | DOWN | RIGHT|   @  |
+ * |   `  |   '  |   "  |   -  |   (  |           |   )  | LEFT | DOWN | RIGHT|   @  |
  * |------+------+------+------+------|           |------+------+------+------+------|
- * |   ,  |   &  |   |  |   =  |   [  |           |   ]  | BKSP |   $  |  DEL |   _  |
+ * |   ,  |   !  |   |  |   =  |   [  |           |   ]  | BKSP |   $  |  DEL |   _  |
  * |------+------+------+------+------|           |------+------+------+------+------|
- * |   ?  |      |      |      | SHFT |           | ▓▓▓▓ |      |      |      |   `  |
+ * |   ?  |      |      |      | SHFT |           | ▓▓▓▓ |      |      |      |   &  |
  * `----------------------------------'           `----------------------------------'
  *
  * ALT - SHIFT
@@ -126,11 +128,46 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //,---------------------------------------------------------------------------------------------------.
        XXXXXXX,   M_ASTR,   M_SLSH,   M_PLUS,  XXXXXXX,  XXXXXXX,    M_ESC,    KC_UP,    M_ENT,  XXXXXXX,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-        M_EXLM,    M_QUO,   M_DQUO,   M_MINS,   M_LPRN,   M_RPRN,  KC_LEFT,  KC_DOWN,  KC_RGHT,     M_AT,
+        M_TICK,    M_QUO,   M_DQUO,   M_MINS,   M_LPRN,   M_RPRN,  KC_LEFT,  KC_DOWN,  KC_RGHT,     M_AT,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-     M_COM_CTL,   M_AMPR,   M_PIPE,  M_EQUAL,   M_LBRC,   M_RBRC,  KC_BSPC,    M_DLR,   KC_DEL,M_UND_CMD,
+     M_COM_CTL,   M_EXLM,   M_PIPE,  M_EQUAL,   M_LBRC,   M_RBRC,  KC_BSPC,    M_DLR,   KC_DEL,M_UND_CMD,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
-        M_QUES,  XXXXXXX,  XXXXXXX,  XXXXXXX,  _______,  _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,    M_TICK
+        M_QUES,  XXXXXXX,  XXXXXXX,  _______,  _______,  _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,    M_AMPR
+  //,---------------------------------------------------------------------------------------------------.
+  ),
+
+/*
+ * Mouse 
+ * ,----------------------------------.           ,----------------------------------.
+ * |      |      |      |      |      |           |      |      |  UP  |      |      |
+ * |------+------+------+------+------|           |------+------+------+------+------|
+ * |      |      |      | CLICK|      |           |      | LEFT | DOWN | RIGHT|      |
+ * |------+------+------+------+------|           |------+------+------+------+------|
+ * |      |      |      |      |      |           |      |      |      |      |      |
+ * |------+------+------+------+------|           |------+------+------+------+------|
+ * |      |      |      | ▓▓▓▓ | SHFT |           |  ALT |      |      |      |      |
+ * `----------------------------------'           `----------------------------------'
+ *
+ * ALT - Mouse
+ * ,----------------------------------.           ,----------------------------------.
+ * |      |   1  |   2  |   3  |      |           |      |  ESC |  UP  |  ENT |      |
+ * |------+------+------+------+------|           |------+------+------+------+------|
+ * |   0  |   4  |   5  |   4  |   {  |           |   }  | LEFT | DOWN | RIGHT|   #  |
+ * |------+------+------+------+------|           |------+------+------+------+------|
+ * |   ;  |   7  |   8  |   9  |   <  |           |   >  | BKSP |   %  |  DEL |   ~  |
+ * |------+------+------+------+------|           |------+------+------+------+------|
+ * |   ^  |      |      | ▓▓▓▓ | SHFT |           | ▓▓▓▓ |      |      |      |   \  |
+ * `----------------------------------'           `----------------------------------'
+ */
+  [_MOUSE] = LAYOUT( \
+  //,---------------------------------------------------------------------------------------------------.
+       XXXXXXX,  XXXXXXX,  KC_WH_U,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_MS_U,  XXXXXXX,  XXXXXXX,
+  //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
+       XXXXXXX,  KC_ACL1,  KC_WH_D,  KC_ACL2,  XXXXXXX,  XXXXXXX,  KC_MS_L,  KC_MS_D,  KC_MS_R,  XXXXXXX,
+  //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
+       _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  _______,
+  //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
+       XXXXXXX,  XXXXXXX,  XXXXXXX,  _______,  _______,  KC_BTN1,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX
   //,---------------------------------------------------------------------------------------------------.
   )
 };
@@ -222,56 +259,56 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       }
       return false;
     }
-    // Mouse click on CTRL + i
-    case KC_I: {
-      if(record->event.pressed) {
-        // CTRL modifier makes this a mouse click
-        if (get_mods() & MOD_BIT(KC_LCTL)) {
-          is_clicking = true;
+    // // Mouse click on CTRL + i
+    // case KC_I: {
+    //   if(record->event.pressed) {
+    //     // CTRL modifier makes this a mouse click
+    //     if (get_mods() & MOD_BIT(KC_LCTL)) {
+    //       is_clicking = true;
 
-          unregister_code(KC_LCTL);
-          send_keyboard_report(); // send mods modifications
-          register_code(KC_MS_BTN1);
-        }
-        // Otherwise, handle as normal alpha key
-        else {
-          register_code(keycode);
-        }
-      } else {
-        if (is_clicking) {
-          unregister_code(KC_MS_BTN1);
+    //       unregister_code(KC_LCTL);
+    //       send_keyboard_report(); // send mods modifications
+    //       register_code(KC_MS_BTN1);
+    //     }
+    //     // Otherwise, handle as normal alpha key
+    //     else {
+    //       register_code(keycode);
+    //     }
+    //   } else {
+    //     if (is_clicking) {
+    //       unregister_code(KC_MS_BTN1);
 
-          register_code(KC_LCTL);
+    //       register_code(KC_LCTL);
 
-          is_clicking = false;
-        } else {
-          unregister_code(keycode);
-        }
-      }
-      return false;
-    }
+    //       is_clicking = false;
+    //     } else {
+    //       unregister_code(keycode);
+    //     }
+    //   }
+    //   return false;
+    // }
 
-    // Mouse movement when CTL held for S,T,N,O
-    case KC_S: {
-      WHEN_CTRL(KC_MS_UP)
-    }
-    case KC_T: {
-      WHEN_CTRL(KC_MS_DOWN)
-    }
-    case KC_N: {
-      WHEN_CTRL(KC_MS_LEFT)
-    }
-    case KC_O: {
-      WHEN_CTRL(KC_MS_RIGHT)
-    }
+    // // Mouse movement when CTL held for S,T,N,O
+    // case KC_S: {
+    //   WHEN_CTRL(KC_MS_UP)
+    // }
+    // case KC_T: {
+    //   WHEN_CTRL(KC_MS_DOWN)
+    // }
+    // case KC_N: {
+    //   WHEN_CTRL(KC_MS_LEFT)
+    // }
+    // case KC_O: {
+    //   WHEN_CTRL(KC_MS_RIGHT)
+    // }
 
-    // Mouse scroll when CTL held for H,E
-    case KC_H: {
-      WHEN_CTRL(KC_MS_WH_UP)
-    }
-    case KC_E: {
-      WHEN_CTRL(KC_MS_WH_DOWN)
-    }
+    // // Mouse scroll when CTL held for H,E
+    // case KC_H: {
+    //   WHEN_CTRL(KC_MS_WH_UP)
+    // }
+    // case KC_E: {
+    //   WHEN_CTRL(KC_MS_WH_DOWN)
+    // }
 
     // Media
     case KC_U: {
@@ -335,9 +372,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
       return false;
     }
-    case M_EXLM: {
-      static bool m_exlm_shifted = false;
-      ALT_SHIFT(SEND_STRING("!"), SEND_STRING("0"), m_exlm_shifted)
+    case M_TICK: {
+      static bool m_tick_shifted = false;
+      ALT_SHIFT(SEND_STRING("`"), SEND_STRING("0"), m_tick_shifted)
     }
     case M_ASTR: {
       static bool m_astr_shifted = false;
@@ -403,9 +440,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       static bool m_ques_shifted = false;
       ALT_SHIFT(SEND_STRING("?"), SEND_STRING("^"), m_ques_shifted)
     }
-    case M_AMPR: {
-      static bool m_ampr_shifted = false;
-      ALT_SHIFT(SEND_STRING("&"), SEND_STRING("7"), m_ampr_shifted)
+    case M_EXLM: {
+      static bool m_exlm_shifted = false;
+      ALT_SHIFT(SEND_STRING("!"), SEND_STRING("7"), m_exlm_shifted)
     }
     case M_PIPE: {
       static bool m_pipe_shifted = false;
@@ -431,9 +468,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       static bool m_at_shifted = false;
       ALT_SHIFT(SEND_STRING("@"), SEND_STRING("#"), m_at_shifted)
     }
-    case M_TICK: {
-      static bool m_tick_shifted = false;
-      ALT_SHIFT(SEND_STRING("`"), SEND_STRING("\\"), m_tick_shifted)
+    case M_AMPR: {
+      static bool m_ampr_shifted = false;
+      ALT_SHIFT(SEND_STRING("&"), SEND_STRING("\\"), m_ampr_shifted)
     }
     case M_ESC: {
       if (record->event.pressed) { 
