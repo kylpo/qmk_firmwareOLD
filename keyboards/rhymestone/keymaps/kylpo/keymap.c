@@ -66,12 +66,12 @@ enum custom_keycodes {
   M_ENT
 };
 
-enum {
+typedef enum {
   SINGLE_TAP = 1,
   SINGLE_HOLD,
   DOUBLE_TAP,
   DOUBLE_HOLD
-};
+} td_state_t;
 
 // Create a global instance of the tapdance state type
 static td_state_t td_state;
@@ -131,7 +131,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
      M_DOT_CTL,     KC_P,     KC_G,     KC_V,     KC_X,     KC_J,     KC_K,     KC_Y,     KC_B, M_SPC_CMD,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
-          KC_Z,  XXXXXXX,  XXXXXXX,  TG(_MOUSE),  KC_LSFT,    L_ALT,  L_MOUSE,  XXXXXXX,  XXXXXXX,     KC_Q
+          KC_Z,  XXXXXXX,  XXXXXXX,  TT(_MOUSE),  KC_LSFT,    L_ALT,  L_MOUSE,  XXXXXXX,  XXXXXXX,     KC_Q
   //,---------------------------------------------------------------------------------------------------.
   ),
 
@@ -544,12 +544,6 @@ uint8_t cur_dance(qk_tap_dance_state_t *state) {
     }
     else return 8;
 }
-
-// Initialize tap structure associated with example tap dance key
-static tap ql_tap_state = {
-    .is_press_action = true,
-    .state = 0
-};
 
 // Functions that control what our tap dance key does
 void ql_finished(qk_tap_dance_state_t *state, void *user_data) {
