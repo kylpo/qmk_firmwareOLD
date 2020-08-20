@@ -20,7 +20,9 @@
 #define PREVENT_STUCK_MODIFIERS
 #define IGNORE_MOD_TAP_INTERRUPT
 
-#define TAPPING_TOGGLE 1
+// #define TAPPING_TOGGLE 1
+
+#define COMBO_COUNT 1
 
 /* Mouse stuff */
 /* from https://www.reddit.com/r/olkb/comments/72u8ou/qmk_mouse_keys_rock/ */

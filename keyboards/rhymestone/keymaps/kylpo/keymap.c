@@ -43,7 +43,7 @@ enum custom_keycodes {
   M_DOT_CTL = SAFE_RANGE,
   M_SPC_CMD,
   M_COM_CTL,
-  M_UND_CMD,
+  M_RET_CMD,
   M_EXLM,
   M_ASTR,
   M_SLSH,
@@ -95,9 +95,12 @@ void ql_finished(qk_tap_dance_state_t *state, void *user_data);
 void ql_reset(qk_tap_dance_state_t *state, void *user_data);
 
 // Defines for layer movement
-// #define L_ALT MO(_ALTERNATE)
-#define L_ALT TD(ALT_MOUSE)
+#define L_ALT MO(_ALTERNATE)
+// #define L_ALT TD(ALT_MOUSE)
 #define L_MOUSE MO(_MOUSE)
+
+// const uint16_t PROGMEM test_combo[] = {KC_LSFT, L_ALT, COMBO_END};
+// combo_t key_combos[COMBO_COUNT] = {COMBO_ACTION(test_combo)};
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /* 
@@ -131,7 +134,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
      M_DOT_CTL,     KC_P,     KC_G,     KC_V,     KC_X,     KC_J,     KC_K,     KC_Y,     KC_B, M_SPC_CMD,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
-          KC_Z,  XXXXXXX,  XXXXXXX,  TT(_MOUSE),  KC_LSFT,    L_ALT,  L_MOUSE,  XXXXXXX,  XXXXXXX,     KC_Q
+          KC_Z,  XXXXXXX,  XXXXXXX,  TG(_MOUSE),  KC_LSFT,    L_ALT,  L_MOUSE,  XXXXXXX,  XXXXXXX,     KC_Q
   //,---------------------------------------------------------------------------------------------------.
   ),
 
@@ -164,7 +167,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
         M_TICK,    M_QUO,   M_DQUO,   M_MINS,   M_LPRN,   M_RPRN,  KC_LEFT,  KC_DOWN,  KC_RGHT,     M_AT,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-     M_COM_CTL,   M_EXLM,   M_PIPE,  M_EQUAL,   M_LBRC,   M_RBRC,  KC_BSPC,    M_DLR,   KC_DEL,M_UND_CMD,
+     M_COM_CTL,   M_EXLM,   M_PIPE,  M_EQUAL,   M_LBRC,   M_RBRC,  KC_BSPC,    M_DLR,   KC_DEL,M_RET_CMD,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
         M_QUES,  XXXXXXX,  XXXXXXX,  _______,  _______,  _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,    M_AMPR
   //,---------------------------------------------------------------------------------------------------.
@@ -201,7 +204,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
        _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  _______,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
-       XXXXXXX,  XXXXXXX,  XXXXXXX,  _______,  _______,  XXXXXXX,  _______,  XXXXXXX,  XXXXXXX,  XXXXXXX
+       XXXXXXX,  XXXXXXX,  XXXXXXX,  _______,  _______,  _______,  _______,  XXXXXXX,  XXXXXXX,  XXXXXXX
   //,---------------------------------------------------------------------------------------------------.
   )
 };
@@ -237,6 +240,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         // if (is_accelerated) {
           unregister_code(KC_ACL2);
         // }
+      }
+      return true;
+    }
+
+    case L_ALT: {
+      // Turn off mouse layer if pressed while MOUSE is active
+      if (!record->event.pressed && IS_LAYER_ON(_MOUSE)){
+        layer_off(_MOUSE);
       }
       return true;
     }
@@ -283,9 +294,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         unregister_code(KC_LGUI);
         if (timer_elapsed(spc_mod_tap_timer) < TAPPING_TERM) {
           if (get_mods() & MOD_BIT(KC_LSHIFT)){
-            unregister_code(KC_LSHIFT);
-            tap_code(KC_ENTER); // shift + tap
-            register_code(KC_LSHIFT);
+            tap_code(KC_MINUS); // shift + tap
           } else {
             tap_code(KC_SPACE); // tap
           }
@@ -388,7 +397,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // tap: Underscore
     // shift+tap: Tilda
     // hold: CMD
-    case M_UND_CMD: {
+    case M_RET_CMD: {
       if(record->event.pressed) {
         und_mod_tap_timer = timer_read();
         register_code(KC_LGUI); // hold
@@ -398,8 +407,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
           if (get_mods() & MOD_BIT(KC_LSHIFT)){
             tap_code(KC_GRAVE); // shift + tap
           } else {
-            register_code16(S(KC_MINUS)); // tap
-            unregister_code16(S(KC_MINUS));
+            tap_code(KC_ENTER); // tap
           }
         }
       }
@@ -525,6 +533,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
     default: {
       return true;
+    }
+  }
+}
+
+void process_combo_event(uint8_t combo_index, bool pressed) {
+  if (pressed) {
+    if (IS_LAYER_ON(_MOUSE)) {
+      layer_off(_MOUSE);
+    } else {
+      layer_on(_MOUSE);
     }
   }
 }
