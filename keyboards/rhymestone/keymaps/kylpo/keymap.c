@@ -28,6 +28,11 @@
 #include QMK_KEYBOARD_H
 #include "keymap.h"
 
+typedef struct {
+  bool is_press_action;
+  uint8_t state;
+} tap;
+
 enum layer_number {
   _BASE = 0,
   _ALTERNATE,
@@ -61,8 +66,37 @@ enum custom_keycodes {
   M_ENT
 };
 
+enum {
+  SINGLE_TAP = 1,
+  SINGLE_HOLD,
+  DOUBLE_TAP,
+  DOUBLE_HOLD
+};
+
+// Create a global instance of the tapdance state type
+static td_state_t td_state;
+
+enum {
+  CT_SE,
+  CT_CLN,
+  CT_EGG,
+  CT_FLSH,
+  X_TAP_DANCE,
+  ALT_MOUSE
+};
+
+// Declare the functions to be used with your tap dance key(s)
+
+// Function associated with all tap dances
+uint8_t cur_dance(qk_tap_dance_state_t *state);
+
+// Functions associated with individual tap dances
+void ql_finished(qk_tap_dance_state_t *state, void *user_data);
+void ql_reset(qk_tap_dance_state_t *state, void *user_data);
+
 // Defines for layer movement
-#define L_ALT MO(_ALTERNATE)
+// #define L_ALT MO(_ALTERNATE)
+#define L_ALT TD(ALT_MOUSE)
 #define L_MOUSE MO(_MOUSE)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -97,7 +131,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
      M_DOT_CTL,     KC_P,     KC_G,     KC_V,     KC_X,     KC_J,     KC_K,     KC_Y,     KC_B, M_SPC_CMD,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
-          KC_Z,  XXXXXXX,  XXXXXXX,  L_MOUSE,  KC_LSFT,    L_ALT,  L_MOUSE,  XXXXXXX,  XXXXXXX,     KC_Q
+          KC_Z,  XXXXXXX,  XXXXXXX,  TG(_MOUSE),  KC_LSFT,    L_ALT,  L_MOUSE,  XXXXXXX,  XXXXXXX,     KC_Q
   //,---------------------------------------------------------------------------------------------------.
   ),
 
@@ -494,3 +528,70 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
   }
 }
+
+// Determine the current tap dance state
+uint8_t cur_dance(qk_tap_dance_state_t *state) {
+    if (state->count == 1) {
+        // if (state->interrupted || !state->pressed) return SINGLE_TAP;
+        // else return SINGLE_HOLD;
+      // if (state->pressed) return SINGLE_HOLD;
+      // else return SINGLE_TAP;
+      return SINGLE_HOLD;
+    } else if (state->count == 2) {
+      // if (state->pressed) return DOUBLE_HOLD;
+      // else return DOUBLE_TAP;
+      return DOUBLE_HOLD;
+    }
+    else return 8;
+}
+
+// Initialize tap structure associated with example tap dance key
+static tap ql_tap_state = {
+    .is_press_action = true,
+    .state = 0
+};
+
+// Functions that control what our tap dance key does
+void ql_finished(qk_tap_dance_state_t *state, void *user_data) {
+    // ql_tap_state.state = cur_dance(state);
+    td_state = cur_dance(state);
+
+    switch (td_state) {
+        case SINGLE_TAP:
+            // tap_code(KC_QUOT);
+            break;
+        case SINGLE_HOLD:
+            layer_on(_ALTERNATE);
+            break;
+        case DOUBLE_TAP:
+            // Check to see if the layer is already set
+            // if (layer_state_is(_MOUSE)) {
+            //     // If already set, then switch it off
+            //     layer_off(_MOUSE);
+            // } else {
+            //     // If not already set, then switch the layer on
+            //     layer_on(_MOUSE);
+            // }
+            // layer_on(_MOUSE);
+            break;
+        case DOUBLE_HOLD:
+            layer_on(_MOUSE);
+          break;
+    }
+}
+
+void ql_reset(qk_tap_dance_state_t *state, void *user_data) {
+   switch (td_state) {
+        case SINGLE_TAP: break;
+        case SINGLE_HOLD: layer_off(_ALTERNATE); break;
+        case DOUBLE_TAP: break;
+        case DOUBLE_HOLD: layer_off(_MOUSE); break;
+    }
+    // ql_tap_state.state = 0;
+}
+
+// Associate our tap dance key with its functionality
+qk_tap_dance_action_t tap_dance_actions[] = {
+    [ALT_MOUSE] = ACTION_TAP_DANCE_FN_ADVANCED_TIME(NULL, ql_finished, ql_reset, 300)
+    // [ALT_MOUSE] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, ql_finished, ql_reset)
+};
