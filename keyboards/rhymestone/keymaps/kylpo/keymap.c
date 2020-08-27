@@ -85,6 +85,11 @@ enum {
   ALT_MOUSE
 };
 
+enum combos {
+  NTO,
+  AEI
+};
+
 // Declare the functions to be used with your tap dance key(s)
 
 // Function associated with all tap dances
@@ -99,8 +104,13 @@ void ql_reset(qk_tap_dance_state_t *state, void *user_data);
 // #define L_ALT TD(ALT_MOUSE)
 #define L_MOUSE MO(_MOUSE)
 
-// const uint16_t PROGMEM test_combo[] = {KC_LSFT, L_ALT, COMBO_END};
-// combo_t key_combos[COMBO_COUNT] = {COMBO_ACTION(test_combo)};
+const uint16_t PROGMEM nto_combo[] = {KC_N, KC_T, KC_O, COMBO_END};
+const uint16_t PROGMEM aei_combo[] = {KC_A, KC_E, KC_I, COMBO_END};
+
+combo_t key_combos[COMBO_COUNT] = {
+  [AEI] = COMBO_ACTION(aei_combo),
+  [NTO] = COMBO_ACTION(nto_combo)
+};
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /* 
@@ -176,33 +186,22 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /*
  * Mouse 
  * ,----------------------------------.           ,----------------------------------.
- * |      |      |      |      |      |           |      |      |  UP  |      |      |
+ * |      |      |SCR ^ |      |      |           |      |      |  UP  |      |      |
  * |------+------+------+------+------|           |------+------+------+------+------|
- * |      |      |      | CLICK|      |           |      | LEFT | DOWN | RIGHT|      |
+ * |      |      |SCR v | CLICK|      |           |      | LEFT | DOWN | RIGHT|      |
  * |------+------+------+------+------|           |------+------+------+------+------|
  * |      |      |      |      |      |           |      |      |      |      |      |
  * |------+------+------+------+------|           |------+------+------+------+------|
  * |      |      |      | ▓▓▓▓ | SHFT |           |  ALT |      |      |      |      |
  * `----------------------------------'           `----------------------------------'
- *
- * ALT - Mouse
- * ,----------------------------------.           ,----------------------------------.
- * |      |   1  |   2  |   3  |      |           |      |  ESC |  UP  |  ENT |      |
- * |------+------+------+------+------|           |------+------+------+------+------|
- * |   0  |   4  |   5  |   4  |   {  |           |   }  | LEFT | DOWN | RIGHT|   #  |
- * |------+------+------+------+------|           |------+------+------+------+------|
- * |   ;  |   7  |   8  |   9  |   <  |           |   >  | BKSP |   %  |  DEL |   ~  |
- * |------+------+------+------+------|           |------+------+------+------+------|
- * |   ^  |      |      | ▓▓▓▓ | SHFT |           | ▓▓▓▓ |      |      |      |   \  |
- * `----------------------------------'           `----------------------------------'
  */
   [_MOUSE] = LAYOUT( \
   //,---------------------------------------------------------------------------------------------------.
-       XXXXXXX,  XXXXXXX,  KC_WH_U,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_MS_U,  XXXXXXX,  XXXXXXX,
+       XXXXXXX,  _______,  KC_WH_U,  _______,  XXXXXXX,  XXXXXXX,  _______,  KC_MS_U,  _______,  XXXXXXX,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-       XXXXXXX,  KC_ACL1,  KC_WH_D,  KC_BTN1,  XXXXXXX,  XXXXXXX,  KC_MS_L,  KC_MS_D,  KC_MS_R,  XXXXXXX,
+       XXXXXXX,  KC_ACL1,  KC_WH_D,  KC_BTN1,  _______,  _______,  KC_MS_L,  KC_MS_D,  KC_MS_R,  _______,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-       _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  _______,
+       _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
        XXXXXXX,  XXXXXXX,  XXXXXXX,  _______,  _______,  _______,  _______,  XXXXXXX,  XXXXXXX,  XXXXXXX
   //,---------------------------------------------------------------------------------------------------.
@@ -220,6 +219,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   static bool is_shift_key_pressed = false;
   // Track ctrl being pressed for when mouse dragging occurs,
   // and we still want to be able to move the mouse.
+  // TODO: rename to is_ctl_down
   static bool is_ctl_key_pressed = false;
 
   switch (keycode) {
@@ -538,6 +538,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 void process_combo_event(uint8_t combo_index, bool pressed) {
+  // switch(combo_index) {
+  //   case AEI: {
+
+  //   }
+  // }
   if (pressed) {
     if (IS_LAYER_ON(_MOUSE)) {
       layer_off(_MOUSE);

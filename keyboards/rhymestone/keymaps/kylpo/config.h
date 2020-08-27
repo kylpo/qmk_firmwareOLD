@@ -22,7 +22,7 @@
 
 // #define TAPPING_TOGGLE 1
 
-#define COMBO_COUNT 1
+#define COMBO_COUNT 2
 
 /* Mouse stuff */
 /* from https://www.reddit.com/r/olkb/comments/72u8ou/qmk_mouse_keys_rock/ */
