@@ -139,22 +139,25 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 // Key macros
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    // static uint16_t dot_mod_tap_timer;
+    static uint16_t dot_mod_tap_timer;
     static uint16_t spc_mod_tap_timer;
     static uint16_t com_mod_tap_timer;
     static uint16_t und_mod_tap_timer;
-    static bool     is_clicking = false;
-    // static bool is_accelerated = false;
-    static bool is_shift_key_pressed = false;
-    // Track ctrl being pressed for when mouse dragging occurs,
-    // and we still want to be able to move the mouse.
-    // TODO: rename to is_ctl_down
-    static bool is_ctl_key_pressed = false;
-    static bool has_ctl_been_used  = false;
+    static bool     is_clicking       = false;
+    static bool     is_shift_down     = false;
+    static bool     is_ctl_down       = false;
+    static bool     is_cmd_down       = false;
+    static bool     has_ctl_been_used = false;
+    static bool     has_cmd_been_used = false;
 
-    // if CTL+keycode was used, make sure CTL's tap isn't registered (it was a hold)
-    if (is_ctl_key_pressed && !has_ctl_been_used && keycode != M_DOT_CTL) {
+    // if CTL+keycode was used, make sure CTL's tap value isn't sent
+    if (is_ctl_down && !has_ctl_been_used && keycode != M_DOT_CTL && keycode != M_COM_CTL) {
         has_ctl_been_used = true;
+    }
+
+    // if CMD+keycode was used, make sure CMD's tap value isn't sent
+    if (is_cmd_down && !has_cmd_been_used && keycode != M_SPC_CMD && keycode != M_RET_CMD) {
+        has_cmd_been_used = true;
     }
 
     switch (keycode) {
@@ -163,18 +166,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         // Also, ctrl + shift speeds up mouse movement.
         case KC_LSFT: {
             if (record->event.pressed) {
-                is_shift_key_pressed = true;
-
-                // if (is_ctl_key_pressed) {
-                // is_accelerated = true;
+                is_shift_down = true;
                 register_code(KC_ACL2);
-                // }
             } else {
-                is_shift_key_pressed = false;
-
-                // if (is_accelerated) {
+                is_shift_down = false;
                 unregister_code(KC_ACL2);
-                // }
             }
 
             // Do not send Shift during a click
@@ -184,7 +180,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case L_ALT: {
             // Turn off mouse layer if pressed while MOUSE is active
             if (!record->event.pressed && IS_LAYER_ON(_MOUSE)) {
-                layer_off(_MOUSE);
+                // layer_off(_MOUSE);
+                DISABLE_MOUSE();
+                // layer_clear();
+                // send_keyboard_report();
             }
             return true;
         }
@@ -198,21 +197,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         // hold: CTL
         case M_DOT_CTL: {
             if (record->event.pressed) {
-                // dot_mod_tap_timer = timer_read();
+                dot_mod_tap_timer = timer_read();
                 register_code(KC_LCTL);  // hold
-                is_ctl_key_pressed = true;
-                has_ctl_been_used  = false;
-
-                // set acceleration when shift is already held
-                // if (is_shift_key_pressed) {
-                // register_code(KC_ACL2);
-                // is_accelerated = true;
-                // }
+                is_ctl_down       = true;
+                has_ctl_been_used = false;
             } else {
                 unregister_code(KC_LCTL);
-                is_ctl_key_pressed = false;
-                if (!has_ctl_been_used) {
-                    // if (timer_elapsed(dot_mod_tap_timer) < TAPPING_TERM) {
+                is_ctl_down = false;
+                if (!has_ctl_been_used && timer_elapsed(dot_mod_tap_timer) < TAPPING_TERM) {
                     if (get_mods() & MOD_BIT(KC_LSHIFT)) {
                         tap_code(KC_SCLN);  // shift + tap
                     } else {
@@ -221,16 +213,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 }
             }
             return false;
-
-            //         user_key_timer = timer_read32();
-            //     layer_on(_NUMBER);
-            //     register_mods(MOD_BIT(KC_RGUI));
-            //   } else {
-            //     unregister_mods(MOD_BIT(KC_RGUI));
-            //     layer_off(_NUMBER);
-            //     if (timer_elapsed32(user_key_timer) < TAPPING_TERM) {
-            //       tap_code(KC_QUOT);
-            //     }
         }
         // tap: Space
         // shift+tap: Return
@@ -239,9 +221,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             if (record->event.pressed) {
                 spc_mod_tap_timer = timer_read();
                 register_code(KC_LGUI);  // hold
+                is_cmd_down       = true;
+                has_cmd_been_used = false;
             } else {
                 unregister_code(KC_LGUI);
-                if (timer_elapsed(spc_mod_tap_timer) < TAPPING_TERM) {
+                is_cmd_down = false;
+                if (!has_cmd_been_used && timer_elapsed(spc_mod_tap_timer) < TAPPING_TERM) {
                     if (get_mods() & MOD_BIT(KC_LSHIFT)) {
                         tap_code(KC_MINUS);  // shift + tap
                     } else {
@@ -254,16 +239,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         // Enable mouse-layer when CTL T,Y,E
         case KC_T: {
-            if (record->event.pressed && is_ctl_key_pressed) {
-                layer_on(_MOUSE);
+            if (record->event.pressed && is_ctl_down) {
+                // layer_on(_MOUSE);
+                ENABLE_MOUSE();
                 return false;
             }
             return true;
         }
 
         case KC_Y: {
-            if (record->event.pressed && is_ctl_key_pressed) {
-                layer_on(_MOUSE);
+            if (record->event.pressed && is_ctl_down) {
+                // layer_on(_MOUSE);
+                ENABLE_MOUSE();
             }
 
             // Return true to pass CTRL+Y to OS, even if Mouse layer was enabled
@@ -271,8 +258,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
 
         case KC_E: {
-            if (record->event.pressed && is_ctl_key_pressed) {
-                layer_on(_MOUSE);
+            if (record->event.pressed && is_ctl_down) {
+                // layer_on(_MOUSE);
+                ENABLE_MOUSE();
                 return false;
             }
 
@@ -311,17 +299,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             if (record->event.pressed) {
                 com_mod_tap_timer = timer_read();
                 register_code(KC_LCTL);  // hold
-                is_ctl_key_pressed = true;
-
-                // set acceleration when shift is already held
-                // if (is_shift_key_pressed) {
-                // register_code(KC_ACL2);
-                // is_accelerated = true;
-                // }
+                is_ctl_down       = true;
+                has_ctl_been_used = false;
             } else {
                 unregister_code(KC_LCTL);
-                is_ctl_key_pressed = false;
-                if (timer_elapsed(com_mod_tap_timer) < TAPPING_TERM) {
+                is_ctl_down = false;
+                if (!has_ctl_been_used && timer_elapsed(com_mod_tap_timer) < TAPPING_TERM) {
                     if (get_mods() & MOD_BIT(KC_LSHIFT)) {
                         unregister_code(KC_LSHIFT);
                         tap_code(KC_SCLN);  // shift + tap
@@ -340,9 +323,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             if (record->event.pressed) {
                 und_mod_tap_timer = timer_read();
                 register_code(KC_LGUI);  // hold
+                is_cmd_down       = true;
+                has_cmd_been_used = false;
             } else {
                 unregister_code(KC_LGUI);
-                if (timer_elapsed(und_mod_tap_timer) < TAPPING_TERM) {
+                is_cmd_down = false;
+                if (!has_cmd_been_used && timer_elapsed(und_mod_tap_timer) < TAPPING_TERM) {
                     if (get_mods() & MOD_BIT(KC_LSHIFT)) {
                         tap_code(KC_GRAVE);  // shift + tap
                     } else {
@@ -350,7 +336,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     }
                 }
             }
-
             return false;
         }
         case M_TICK: {
@@ -427,7 +412,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
         case M_ESC: {
             if (record->event.pressed) {
-                if (is_shift_key_pressed) {
+                if (is_shift_down) {
                     register_code(KC_TAB);
                 } else {
                     register_code(KC_ESC);
@@ -456,10 +441,11 @@ void process_combo_event(uint8_t combo_index, bool pressed) {
     //   }
     // }
     if (pressed) {
-        if (IS_LAYER_ON(_MOUSE)) {
-            layer_off(_MOUSE);
-        } else {
-            layer_on(_MOUSE);
-        }
+        ENABLE_MOUSE();
+        // if (IS_LAYER_ON(_MOUSE)) {
+        //     layer_off(_MOUSE);
+        // } else {
+        //     layer_on(_MOUSE);
+        // }
     }
 }
