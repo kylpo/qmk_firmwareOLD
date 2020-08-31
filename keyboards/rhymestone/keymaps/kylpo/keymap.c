@@ -127,11 +127,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * `----------------------------------'           `----------------------------------'
      */
     [_MOUSE] = LAYOUT(  //,---------------------------------------------------------------------------------------------------.
-        XXXXXXX, _______, KC_WH_U, _______, XXXXXXX, XXXXXXX, _______, KC_MS_U, _______, XXXXXXX,
+        XXXXXXX, XXXXXXX, KC_WH_U, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_MS_U, XXXXXXX, XXXXXXX,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-        XXXXXXX, KC_ACL1, KC_WH_D, KC_BTN1, _______, _______, KC_MS_L, KC_MS_D, KC_MS_R, _______,
+        XXXXXXX, KC_ACL1, KC_WH_D, KC_BTN1, XXXXXXX, XXXXXXX, KC_MS_L, KC_MS_D, KC_MS_R, XXXXXXX,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
         //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX
         //,---------------------------------------------------------------------------------------------------.
@@ -143,12 +143,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     static uint16_t spc_mod_tap_timer;
     static uint16_t com_mod_tap_timer;
     static uint16_t und_mod_tap_timer;
-    static bool     is_clicking       = false;
-    static bool     is_shift_down     = false;
-    static bool     is_ctl_down       = false;
-    static bool     is_cmd_down       = false;
-    static bool     has_ctl_been_used = false;
-    static bool     has_cmd_been_used = false;
+    static bool     is_clicking           = false;
+    static bool     is_shift_down         = false;
+    static bool     is_ctl_down           = false;
+    static bool     is_cmd_down           = false;
+    static bool     has_ctl_been_used     = false;
+    static bool     has_cmd_been_used     = false;
+    static bool     should_reenable_mouse = false;
 
     // if CTL+keycode was used, make sure CTL's tap value isn't sent
     if (is_ctl_down && !has_ctl_been_used && keycode != M_DOT_CTL && keycode != M_COM_CTL) {
@@ -190,20 +191,33 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         // shift+tap: Colon
         // hold: CTL
         case M_DOT_CTL: {
+            // if (IS_LAYER_ON(_MOUSE)) {
+            //     layer_off(_MOUSE);
+            //     should_reenable_mouse = true;
+            // }
+
             if (record->event.pressed) {
                 dot_mod_tap_timer = timer_read();
                 register_code(KC_LCTL);  // hold
                 is_ctl_down       = true;
                 has_ctl_been_used = false;
+
+                if (IS_LAYER_ON(_MOUSE)) {
+                    layer_off(_MOUSE);
+                    should_reenable_mouse = true;
+                }
             } else {
                 unregister_code(KC_LCTL);
                 is_ctl_down = false;
-                if (!has_ctl_been_used && timer_elapsed(dot_mod_tap_timer) < TAPPING_TERM) {
+                if (!has_ctl_been_used && !should_reenable_mouse && timer_elapsed(dot_mod_tap_timer) < TAPPING_TERM) {
                     if (get_mods() & MOD_BIT(KC_LSHIFT)) {
                         tap_code(KC_SCLN);  // shift + tap
                     } else {
                         tap_code(KC_DOT);  // tap
                     }
+                } else if (should_reenable_mouse) {
+                    layer_on(_MOUSE);
+                    should_reenable_mouse = false;
                 }
             }
             return false;
@@ -217,15 +231,23 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 register_code(KC_LGUI);  // hold
                 is_cmd_down       = true;
                 has_cmd_been_used = false;
+
+                if (IS_LAYER_ON(_MOUSE)) {
+                    layer_off(_MOUSE);
+                    should_reenable_mouse = true;
+                }
             } else {
                 unregister_code(KC_LGUI);
                 is_cmd_down = false;
-                if (!has_cmd_been_used && timer_elapsed(spc_mod_tap_timer) < TAPPING_TERM) {
+                if (!has_cmd_been_used && !should_reenable_mouse && timer_elapsed(spc_mod_tap_timer) < TAPPING_TERM) {
                     if (get_mods() & MOD_BIT(KC_LSHIFT)) {
                         tap_code(KC_MINUS);  // shift + tap
                     } else {
                         tap_code(KC_SPACE);  // tap
                     }
+                } else if (should_reenable_mouse) {
+                    layer_on(_MOUSE);
+                    should_reenable_mouse = false;
                 }
             }
             return false;
@@ -260,6 +282,29 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
             // Return true to pass CTRL+Y to OS, even if Mouse layer was enabled
             return true;
+        }
+
+            // Mouse click on CTRL + i
+        case KC_I: {
+            if (record->event.pressed) {
+                // CTRL modifier makes this a mouse click
+                if (get_mods() & MOD_BIT(KC_LCTL)) {
+                    is_clicking = true;
+                    register_code(KC_MS_BTN1);
+                }
+                // Otherwise, handle as normal alpha key
+                else {
+                    register_code(keycode);
+                }
+            } else {
+                if (is_clicking) {
+                    unregister_code(KC_MS_BTN1);
+                    is_clicking = false;
+                } else {
+                    unregister_code(keycode);
+                }
+            }
+            return false;
         }
 
         // Media
