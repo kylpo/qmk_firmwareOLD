@@ -178,13 +178,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
 
         case L_ALT: {
-            // Turn off mouse layer if pressed while MOUSE is active
-            if (!record->event.pressed && IS_LAYER_ON(_MOUSE)) {
-                // layer_off(_MOUSE);
-                DISABLE_MOUSE();
-                // layer_clear();
-                // send_keyboard_report();
-            }
+            DISABLE_MOUSE();
             return true;
         }
 
