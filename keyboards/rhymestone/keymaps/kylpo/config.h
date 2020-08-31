@@ -16,7 +16,7 @@
 
 #pragma once
 
-#define TAPPING_TERM 200
+#define TAPPING_TERM 175
 #define PREVENT_STUCK_MODIFIERS
 #define IGNORE_MOD_TAP_INTERRUPT
 
@@ -37,8 +37,8 @@
 // Hold accel to use it
 #define MK_MOMENTARY_ACCEL
 
-#define MK_C_OFFSET_UNMOD 4 // cursor offset per movement (default: 16)
-#define MK_C_INTERVAL_UNMOD 16 // time between cursor movements (default: 16)
+#define MK_C_OFFSET_UNMOD 4     // cursor offset per movement (default: 16)
+#define MK_C_INTERVAL_UNMOD 16  // time between cursor movements (default: 16)
 #define MK_C_OFFSET_2 24
 
 // #define MK_COMBINED
