@@ -36,12 +36,14 @@
 
 #define ENABLE_MOUSE()          \
     if (IS_LAYER_OFF(_MOUSE)) { \
-        layer_on(_MOUSE);       \
-        tap_code(KC_F13);       \
+        /*layer_on(_MOUSE);*/   \
+        /*tap_code(KC_F13);*/   \
+        tap_code(KC_CAPS);      \
     }
 
 #define DISABLE_MOUSE()        \
     if (IS_LAYER_ON(_MOUSE)) { \
-        layer_off(_MOUSE);     \
-        tap_code(KC_F13);      \
+        /*layer_off(_MOUSE);*/ \
+        /*tap_code(KC_F13);*/  \
+        tap_code(KC_CAPS);     \
     }

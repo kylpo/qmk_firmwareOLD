@@ -223,7 +223,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
         }
         // tap: Space
-        // shift+tap: Return
+        // shift+tap: Underscore
         // hold: CMD
         case M_SPC_CMD: {
             if (record->event.pressed) {
@@ -487,4 +487,21 @@ void process_combo_event(uint8_t combo_index, bool pressed) {
         //     layer_on(_MOUSE);
         // }
     }
+}
+
+// use Capslock to toggle MOUSE mode
+void led_set_user(uint8_t usb_led) {
+    if (usb_led & (1 << USB_LED_CAPS_LOCK)) {
+        layer_on(_MOUSE);
+    } else {
+        layer_off(_MOUSE);
+    }
+}
+
+void keyboard_post_init_user(void) {
+    // Customise these values to desired behaviour
+    debug_enable = true;
+    debug_matrix = true;
+    // debug_keyboard=true;
+    // debug_mouse=true;
 }
