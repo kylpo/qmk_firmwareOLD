@@ -30,7 +30,7 @@
 
 enum layer_number { _BASE = 0, _ALTERNATE, _MOUSE };
 
-enum custom_keycodes { M_DOT_CTL = SAFE_RANGE, M_SPC_CMD, M_COM_CTL, M_RET_CMD, M_EXLM, M_ASTR, M_SLSH, M_PLUS, M_QUO, M_DQUO, M_MINS, M_LPRN, M_RPRN, M_QUES, M_AMPR, M_PIPE, M_EQUAL, M_LBRC, M_RBRC, M_DLR, M_AT, M_TICK, M_ESC, M_ENT };
+enum custom_keycodes { R3_C1 = SAFE_RANGE, R3_C10, A_R3_C1, A_R3_C10, A_R3_C2, A_R1_C2, A_R1_C3, A_R1_C4, A_R2_C2, A_R2_C3, A_R2_C4, A_R2_C5, A_R2_C6, A_R4_C1, A_R4_C10, A_R3_C3, A_R3_C4, A_R3_C5, A_R3_C6, A_R3_C8, A_R2_C10, A_R2_C1, A_R1_C7, A_R1_C9 };
 
 enum { CT_SE, CT_CLN, CT_EGG, CT_FLSH, X_TAP_DANCE, ALT_MOUSE };
 
@@ -74,7 +74,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
         KC_F, KC_A, KC_E, KC_I, KC_U, KC_M, KC_N, KC_T, KC_O, KC_W,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-        M_DOT_CTL, KC_P, KC_G, KC_V, KC_X, KC_J, KC_K, KC_Y, KC_B, M_SPC_CMD,
+        R3_C1, KC_P, KC_G, KC_V, KC_X, KC_J, KC_K, KC_Y, KC_B, R3_C10,
         //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
         KC_Z, XXXXXXX, XXXXXXX, XXXXXXX, KC_LSFT, L_ALT, XXXXXXX, XXXXXXX, XXXXXXX, KC_Q
         //,---------------------------------------------------------------------------------------------------.
@@ -104,13 +104,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * `----------------------------------'           `----------------------------------'
      */
     [_ALTERNATE] = LAYOUT(  //,---------------------------------------------------------------------------------------------------.
-        XXXXXXX, M_ASTR, M_SLSH, M_PLUS, XXXXXXX, XXXXXXX, M_ESC, KC_UP, M_ENT, XXXXXXX,
+        XXXXXXX, A_R1_C2, A_R1_C3, A_R1_C4, XXXXXXX, XXXXXXX, A_R1_C7, KC_UP, A_R1_C9, XXXXXXX,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-        M_TICK, M_QUO, M_DQUO, M_MINS, M_LPRN, M_RPRN, KC_LEFT, KC_DOWN, KC_RGHT, M_AT,
+        A_R2_C1, A_R2_C2, A_R2_C3, A_R2_C4, A_R2_C5, A_R2_C6, KC_LEFT, KC_DOWN, KC_RGHT, A_R2_C10,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-        M_COM_CTL, M_EXLM, M_PIPE, M_EQUAL, M_LBRC, M_RBRC, KC_BSPC, M_DLR, KC_DEL, M_RET_CMD,
+        A_R3_C1, A_R3_C2, A_R3_C3, A_R3_C4, A_R3_C5, A_R3_C6, KC_BSPC, A_R3_C8, KC_DEL, A_R3_C10,
         //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
-        M_QUES, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______, XXXXXXX, XXXXXXX, XXXXXXX, M_AMPR
+        A_R4_C1, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______, XXXXXXX, XXXXXXX, XXXXXXX, A_R4_C10
         //,---------------------------------------------------------------------------------------------------.
         ),
 
@@ -139,25 +139,21 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 // Key macros
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    static uint16_t dot_mod_tap_timer;
-    static uint16_t spc_mod_tap_timer;
-    static uint16_t com_mod_tap_timer;
-    static uint16_t und_mod_tap_timer;
-    static bool     is_clicking           = false;
-    static bool     is_shift_down         = false;
-    static bool     is_ctl_down           = false;
-    static bool     is_cmd_down           = false;
-    static bool     has_ctl_been_used     = false;
-    static bool     has_cmd_been_used     = false;
-    static bool     should_reenable_mouse = false;
+    static bool is_clicking           = false;
+    static bool is_shift_down         = false;
+    static bool is_ctl_down           = false;
+    static bool is_cmd_down           = false;
+    static bool has_ctl_been_used     = false;
+    static bool has_cmd_been_used     = false;
+    static bool should_reenable_mouse = false;
 
     // if CTL+keycode was used, make sure CTL's tap value isn't sent
-    if (is_ctl_down && !has_ctl_been_used && keycode != M_DOT_CTL && keycode != M_COM_CTL) {
+    if (is_ctl_down && !has_ctl_been_used && keycode != R3_C1 && keycode != A_R3_C1) {
         has_ctl_been_used = true;
     }
 
     // if CMD+keycode was used, make sure CMD's tap value isn't sent
-    if (is_cmd_down && !has_cmd_been_used && keycode != M_SPC_CMD && keycode != M_RET_CMD) {
+    if (is_cmd_down && !has_cmd_been_used && keycode != R3_C10 && keycode != A_R3_C10) {
         has_cmd_been_used = true;
     }
 
@@ -190,14 +186,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         // tap: Dot
         // shift+tap: Colon
         // hold: CTL
-        case M_DOT_CTL: {
+        case R3_C1: {
             // if (IS_LAYER_ON(_MOUSE)) {
             //     layer_off(_MOUSE);
             //     should_reenable_mouse = true;
             // }
+            static uint16_t r3_c1_timer;
 
             if (record->event.pressed) {
-                dot_mod_tap_timer = timer_read();
+                r3_c1_timer = timer_read();
                 register_code(KC_LCTL);  // hold
                 is_ctl_down       = true;
                 has_ctl_been_used = false;
@@ -209,7 +206,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             } else {
                 unregister_code(KC_LCTL);
                 is_ctl_down = false;
-                if (!has_ctl_been_used && !should_reenable_mouse && timer_elapsed(dot_mod_tap_timer) < TAPPING_TERM) {
+                if (!has_ctl_been_used && !should_reenable_mouse && timer_elapsed(r3_c1_timer) < TAPPING_TERM) {
                     if (get_mods() & MOD_BIT(KC_LSHIFT)) {
                         tap_code(KC_SCLN);  // shift + tap
                     } else {
@@ -225,9 +222,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         // tap: Space
         // shift+tap: Underscore
         // hold: CMD
-        case M_SPC_CMD: {
+        case R3_C10: {
+            static uint16_t r3_c10_timer;
+
             if (record->event.pressed) {
-                spc_mod_tap_timer = timer_read();
+                r3_c10_timer = timer_read();
                 register_code(KC_LGUI);  // hold
                 is_cmd_down       = true;
                 has_cmd_been_used = false;
@@ -239,7 +238,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             } else {
                 unregister_code(KC_LGUI);
                 is_cmd_down = false;
-                if (!has_cmd_been_used && !should_reenable_mouse && timer_elapsed(spc_mod_tap_timer) < TAPPING_TERM) {
+                if (!has_cmd_been_used && !should_reenable_mouse && timer_elapsed(r3_c10_timer) < TAPPING_TERM) {
                     if (get_mods() & MOD_BIT(KC_LSHIFT)) {
                         tap_code(KC_MINUS);  // shift + tap
                     } else {
@@ -334,16 +333,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         // tap: Comma
         // shift+tap: Semicolon
         // hold: CTL
-        case M_COM_CTL: {
+        case A_R3_C1: {
+            static uint16_t a_r3_c1_timer;
+
             if (record->event.pressed) {
-                com_mod_tap_timer = timer_read();
+                a_r3_c1_timer = timer_read();
                 register_code(KC_LCTL);  // hold
                 is_ctl_down       = true;
                 has_ctl_been_used = false;
             } else {
                 unregister_code(KC_LCTL);
                 is_ctl_down = false;
-                if (!has_ctl_been_used && timer_elapsed(com_mod_tap_timer) < TAPPING_TERM) {
+                if (!has_ctl_been_used && timer_elapsed(a_r3_c1_timer) < TAPPING_TERM) {
                     if (get_mods() & MOD_BIT(KC_LSHIFT)) {
                         unregister_code(KC_LSHIFT);
                         tap_code(KC_SCLN);  // shift + tap
@@ -358,16 +359,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         // tap: Underscore
         // shift+tap: Tilda
         // hold: CMD
-        case M_RET_CMD: {
+        case A_R3_C10: {
+            static uint16_t a_r3_c10_timer;
+
             if (record->event.pressed) {
-                und_mod_tap_timer = timer_read();
+                a_r3_c10_timer = timer_read();
                 register_code(KC_LGUI);  // hold
                 is_cmd_down       = true;
                 has_cmd_been_used = false;
             } else {
                 unregister_code(KC_LGUI);
                 is_cmd_down = false;
-                if (!has_cmd_been_used && timer_elapsed(und_mod_tap_timer) < TAPPING_TERM) {
+                if (!has_cmd_been_used && timer_elapsed(a_r3_c10_timer) < TAPPING_TERM) {
                     if (get_mods() & MOD_BIT(KC_LSHIFT)) {
                         tap_code(KC_GRAVE);  // shift + tap
                     } else {
@@ -377,79 +380,79 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
         }
-        case M_TICK: {
-            static bool m_tick_shifted = false;
-            ALT_SHIFT(SEND_STRING("`"), SEND_STRING("0"), m_tick_shifted)
+        case A_R1_C2: {
+            static bool a_r1_c2_timer = false;
+            ALT_SHIFT(SEND_STRING("*"), SEND_STRING("1"), a_r1_c2_timer)
         }
-        case M_ASTR: {
-            static bool m_astr_shifted = false;
-            ALT_SHIFT(SEND_STRING("*"), SEND_STRING("1"), m_astr_shifted)
+        case A_R1_C3: {
+            static bool a_r1_c3_timer = false;
+            ALT_SHIFT(SEND_STRING("/"), SEND_STRING("2"), a_r1_c3_timer)
         }
-        case M_SLSH: {
-            static bool m_slsh_shifted = false;
-            ALT_SHIFT(SEND_STRING("/"), SEND_STRING("2"), m_slsh_shifted)
+        case A_R1_C4: {
+            static bool a_r1_c4_timer = false;
+            ALT_SHIFT(SEND_STRING("+"), SEND_STRING("3"), a_r1_c4_timer)
         }
-        case M_PLUS: {
-            static bool m_plus_shifted = false;
-            ALT_SHIFT(SEND_STRING("+"), SEND_STRING("3"), m_plus_shifted)
+        case A_R2_C1: {
+            static bool a_r1_c1_timer = false;
+            ALT_SHIFT(SEND_STRING("`"), SEND_STRING("0"), a_r1_c1_timer)
         }
-        case M_QUO: {
-            static bool m_quo_shifted = false;
-            ALT_SHIFT(SEND_STRING("'"), SEND_STRING("4"), m_quo_shifted)
+        case A_R2_C2: {
+            static bool a_r2_c2_timer = false;
+            ALT_SHIFT(SEND_STRING("'"), SEND_STRING("4"), a_r2_c2_timer)
         }
-        case M_DQUO: {
-            static bool m_dquo_shifted = false;
-            ALT_SHIFT(SEND_STRING("\""), SEND_STRING("5"), m_dquo_shifted)
+        case A_R2_C3: {
+            static bool a_r2_c3_timer = false;
+            ALT_SHIFT(SEND_STRING("\""), SEND_STRING("5"), a_r2_c3_timer)
         }
-        case M_MINS: {
-            static bool m_mins_shifted = false;
-            ALT_SHIFT(SEND_STRING("-"), SEND_STRING("6"), m_mins_shifted)
+        case A_R2_C4: {
+            static bool a_r2_c4_timer = false;
+            ALT_SHIFT(SEND_STRING("-"), SEND_STRING("6"), a_r2_c4_timer)
         }
-        case M_LPRN: {
-            static bool m_lprn_shifted = false;
-            ALT_SHIFT(SEND_STRING("("), SEND_STRING("{"), m_lprn_shifted)
+        case A_R2_C5: {
+            static bool a_r2_c5_timer = false;
+            ALT_SHIFT(SEND_STRING("("), SEND_STRING("{"), a_r2_c5_timer)
         }
-        case M_RPRN: {
-            static bool m_rprn_shifted = false;
-            ALT_SHIFT(SEND_STRING(")"), SEND_STRING("}"), m_rprn_shifted)
+        case A_R2_C6: {
+            static bool a_r2_c6_timer = false;
+            ALT_SHIFT(SEND_STRING(")"), SEND_STRING("}"), a_r2_c6_timer)
         }
-        case M_QUES: {
-            static bool m_ques_shifted = false;
-            ALT_SHIFT(SEND_STRING("?"), SEND_STRING("^"), m_ques_shifted)
+        case A_R4_C1: {
+            static bool a_r4_c1_timer = false;
+            ALT_SHIFT(SEND_STRING("?"), SEND_STRING("^"), a_r4_c1_timer)
         }
-        case M_EXLM: {
-            static bool m_exlm_shifted = false;
-            ALT_SHIFT(SEND_STRING("!"), SEND_STRING("7"), m_exlm_shifted)
+        case A_R3_C2: {
+            static bool a_r3_c2_timer = false;
+            ALT_SHIFT(SEND_STRING("!"), SEND_STRING("7"), a_r3_c2_timer)
         }
-        case M_PIPE: {
-            static bool m_pipe_shifted = false;
-            ALT_SHIFT(SEND_STRING("|"), SEND_STRING("8"), m_pipe_shifted)
+        case A_R3_C3: {
+            static bool a_r3_c3_timer = false;
+            ALT_SHIFT(SEND_STRING("|"), SEND_STRING("8"), a_r3_c3_timer)
         }
-        case M_EQUAL: {
-            static bool m_equal_shifted = false;
-            ALT_SHIFT(SEND_STRING("="), SEND_STRING("9"), m_equal_shifted)
+        case A_R3_C4: {
+            static bool a_r3_c4_timer = false;
+            ALT_SHIFT(SEND_STRING("="), SEND_STRING("9"), a_r3_c4_timer)
         }
-        case M_LBRC: {
-            static bool m_lbrc_shifted = false;
-            ALT_SHIFT(SEND_STRING("["), SEND_STRING("<"), m_lbrc_shifted)
+        case A_R3_C5: {
+            static bool a_r3_c5_timer = false;
+            ALT_SHIFT(SEND_STRING("["), SEND_STRING("<"), a_r3_c5_timer)
         }
-        case M_RBRC: {
-            static bool m_rbrc_shifted = false;
-            ALT_SHIFT(SEND_STRING("]"), SEND_STRING(">"), m_rbrc_shifted)
+        case A_R3_C6: {
+            static bool a_r3_c6_timer = false;
+            ALT_SHIFT(SEND_STRING("]"), SEND_STRING(">"), a_r3_c6_timer)
         }
-        case M_DLR: {
-            static bool m_dlr_shifted = false;
-            ALT_SHIFT(SEND_STRING("$"), SEND_STRING("\%"), m_dlr_shifted)
+        case A_R3_C8: {
+            static bool a_r3_c8_timer = false;
+            ALT_SHIFT(SEND_STRING("$"), SEND_STRING("\%"), a_r3_c8_timer)
         }
-        case M_AT: {
-            static bool m_at_shifted = false;
-            ALT_SHIFT(SEND_STRING("@"), SEND_STRING("#"), m_at_shifted)
+        case A_R2_C10: {
+            static bool a_r2_c10_timer = false;
+            ALT_SHIFT(SEND_STRING("@"), SEND_STRING("#"), a_r2_c10_timer)
         }
-        case M_AMPR: {
-            static bool m_ampr_shifted = false;
-            ALT_SHIFT(SEND_STRING("&"), SEND_STRING("\\"), m_ampr_shifted)
+        case A_R4_C10: {
+            static bool a_r4_c10_timer = false;
+            ALT_SHIFT(SEND_STRING("&"), SEND_STRING("\\"), a_r4_c10_timer)
         }
-        case M_ESC: {
+        case A_R1_C7: {
             if (record->event.pressed) {
                 if (is_shift_down) {
                     register_code(KC_TAB);
@@ -462,9 +465,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
         }
-        case M_ENT: {
-            static bool m_ent_shifted = false;
-            ALT_SHIFT(SEND_STRING(SS_TAP(X_ENT)), SEND_STRING(SS_TAP(X_TAB)), m_ent_shifted);
+        case A_R1_C9: {
+            static bool a_r1_c9_timer = false;
+            ALT_SHIFT(SEND_STRING(SS_TAP(X_ENT)), SEND_STRING(SS_TAP(X_TAB)), a_r1_c9_timer);
         }
 
         default: {
