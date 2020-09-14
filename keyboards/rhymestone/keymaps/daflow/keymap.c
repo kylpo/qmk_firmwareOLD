@@ -380,76 +380,76 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
         }
         case A_R1_C2: {
-            static bool a_r1_c2_timer = false;
-            ALT_SHIFT(SEND_STRING("*"), SEND_STRING("1"), a_r1_c2_timer)
+            static bool is_a_r1_c2_shifted = false;
+            ALT_SHIFT(SEND_STRING("*"), SEND_STRING("1"), is_a_r1_c2_shifted)
         }
         case A_R1_C3: {
-            static bool a_r1_c3_timer = false;
-            ALT_SHIFT(SEND_STRING("/"), SEND_STRING("2"), a_r1_c3_timer)
+            static bool is_a_r1_c3_shifted = false;
+            ALT_SHIFT(SEND_STRING("/"), SEND_STRING("2"), is_a_r1_c3_shifted)
         }
         case A_R1_C4: {
-            static bool a_r1_c4_timer = false;
-            ALT_SHIFT(SEND_STRING("+"), SEND_STRING("3"), a_r1_c4_timer)
+            static bool is_a_r1_c4_shifted = false;
+            ALT_SHIFT(SEND_STRING("+"), SEND_STRING("3"), is_a_r1_c4_shifted)
         }
         case A_R2_C1: {
-            static bool a_r1_c1_timer = false;
-            ALT_SHIFT(SEND_STRING("`"), SEND_STRING("0"), a_r1_c1_timer)
+            static bool is_a_r1_c1_shifted = false;
+            ALT_SHIFT(SEND_STRING("`"), SEND_STRING("0"), is_a_r1_c1_shifted)
         }
         case A_R2_C2: {
-            static bool a_r2_c2_timer = false;
-            ALT_SHIFT(SEND_STRING("'"), SEND_STRING("4"), a_r2_c2_timer)
+            static bool is_a_r2_c2_shifted = false;
+            ALT_SHIFT(SEND_STRING("'"), SEND_STRING("4"), is_a_r2_c2_shifted)
         }
         case A_R2_C3: {
-            static bool a_r2_c3_timer = false;
-            ALT_SHIFT(SEND_STRING("\""), SEND_STRING("5"), a_r2_c3_timer)
+            static bool is_a_r2_c3_shifted = false;
+            ALT_SHIFT(SEND_STRING("\""), SEND_STRING("5"), is_a_r2_c3_shifted)
         }
         case A_R2_C4: {
-            static bool a_r2_c4_timer = false;
-            ALT_SHIFT(SEND_STRING("-"), SEND_STRING("6"), a_r2_c4_timer)
+            static bool is_a_r2_c4_shifted = false;
+            ALT_SHIFT(SEND_STRING("-"), SEND_STRING("6"), is_a_r2_c4_shifted)
         }
         case A_R2_C5: {
-            static bool a_r2_c5_timer = false;
-            ALT_SHIFT(SEND_STRING("("), SEND_STRING("{"), a_r2_c5_timer)
+            static bool is_a_r2_c5_shifted = false;
+            ALT_SHIFT(SEND_STRING("("), SEND_STRING("{"), is_a_r2_c5_shifted)
         }
         case A_R2_C6: {
-            static bool a_r2_c6_timer = false;
-            ALT_SHIFT(SEND_STRING(")"), SEND_STRING("}"), a_r2_c6_timer)
+            static bool is_a_r2_c6_shifted = false;
+            ALT_SHIFT(SEND_STRING(")"), SEND_STRING("}"), is_a_r2_c6_shifted)
         }
         case A_R4_C1: {
-            static bool a_r4_c1_timer = false;
-            ALT_SHIFT(SEND_STRING("?"), SEND_STRING("^"), a_r4_c1_timer)
+            static bool is_a_r4_c1_shifted = false;
+            ALT_SHIFT(SEND_STRING("?"), SEND_STRING("^"), is_a_r4_c1_shifted)
         }
         case A_R3_C2: {
-            static bool a_r3_c2_timer = false;
-            ALT_SHIFT(SEND_STRING("!"), SEND_STRING("7"), a_r3_c2_timer)
+            static bool is_a_r3_c2_shifted = false;
+            ALT_SHIFT(SEND_STRING("!"), SEND_STRING("7"), is_a_r3_c2_shifted)
         }
         case A_R3_C3: {
-            static bool a_r3_c3_timer = false;
-            ALT_SHIFT(SEND_STRING("|"), SEND_STRING("8"), a_r3_c3_timer)
+            static bool is_a_r3_c3_shifted = false;
+            ALT_SHIFT(SEND_STRING("|"), SEND_STRING("8"), is_a_r3_c3_shifted)
         }
         case A_R3_C4: {
-            static bool a_r3_c4_timer = false;
-            ALT_SHIFT(SEND_STRING("="), SEND_STRING("9"), a_r3_c4_timer)
+            static bool is_a_r3_c4_shifted = false;
+            ALT_SHIFT(SEND_STRING("="), SEND_STRING("9"), is_a_r3_c4_shifted)
         }
         case A_R3_C5: {
-            static bool a_r3_c5_timer = false;
-            ALT_SHIFT(SEND_STRING("["), SEND_STRING("<"), a_r3_c5_timer)
+            static bool is_a_r3_c5_shifted = false;
+            ALT_SHIFT(SEND_STRING("["), SEND_STRING("<"), is_a_r3_c5_shifted)
         }
         case A_R3_C6: {
-            static bool a_r3_c6_timer = false;
-            ALT_SHIFT(SEND_STRING("]"), SEND_STRING(">"), a_r3_c6_timer)
+            static bool is_a_r3_c6_shifted = false;
+            ALT_SHIFT(SEND_STRING("]"), SEND_STRING(">"), is_a_r3_c6_shifted)
         }
         case A_R3_C8: {
-            static bool a_r3_c8_timer = false;
-            ALT_SHIFT(SEND_STRING("$"), SEND_STRING("\%"), a_r3_c8_timer)
+            static bool is_a_r3_c8_shifted = false;
+            ALT_SHIFT(SEND_STRING("$"), SEND_STRING("\%"), is_a_r3_c8_shifted)
         }
         case A_R2_C10: {
-            static bool a_r2_c10_timer = false;
-            ALT_SHIFT(SEND_STRING("@"), SEND_STRING("#"), a_r2_c10_timer)
+            static bool is_a_r2_c10_shifted = false;
+            ALT_SHIFT(SEND_STRING("@"), SEND_STRING("#"), is_a_r2_c10_shifted)
         }
         case A_R4_C10: {
-            static bool a_r4_c10_timer = false;
-            ALT_SHIFT(SEND_STRING("&"), SEND_STRING("\\"), a_r4_c10_timer)
+            static bool is_a_r4_c10_shifted = false;
+            ALT_SHIFT(SEND_STRING("&"), SEND_STRING("\\"), is_a_r4_c10_shifted)
         }
         case A_R1_C7: {
             if (record->event.pressed) {
@@ -465,10 +465,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
         }
         case A_R1_C9: {
-            static bool a_r1_c9_timer = false;
-            ALT_SHIFT(SEND_STRING(SS_TAP(X_ENT)), SEND_STRING(SS_TAP(X_TAB)), a_r1_c9_timer);
+            static bool is_a_r1_c9_shifted = false;
+            ALT_SHIFT(SEND_STRING(SS_TAP(X_ENT)), SEND_STRING(SS_TAP(X_TAB)), is_a_r1_c9_shifted);
         }
-
         default: {
             return true;
         }
