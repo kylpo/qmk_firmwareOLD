@@ -506,9 +506,10 @@ void led_set_user(uint8_t usb_led) {
 }
 
 void keyboard_post_init_user(void) {
-    // Customise these values to desired behaviour
+#ifdef CONSOLE_ENABLE
     debug_enable = true;
-    // debug_matrix = true;
-    // debug_keyboard=true;
-    // debug_mouse=true;
+    debug_matrix = true;
+// debug_keyboard=true;
+// debug_mouse=true;
+#endif
 }
