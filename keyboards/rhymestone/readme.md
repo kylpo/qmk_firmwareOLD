@@ -22,16 +22,16 @@ See the [build environment setup](https://docs.qmk.fm/#/getting_started_build_to
 From project root (`/qmk_firmware`):
 
 ```sh
-make rhymestone:kylpo
+make rhymestone:kylpo2
 
-cp .build/rhymestone_rev1_kylpo.hex ~/Downloads
+cp .build/rhymestone_rev1_kylpo2.hex ~/Downloads
 
 ```
 
 or all in one:
 
 ```sh
-make rhymestone:kylpo && cp .build/rhymestone_rev1_kylpo.hex ~/Downloads
+make rhymestone:kylpo2 && cp .build/rhymestone_rev1_kylpo2.hex ~/Downloads
 ```
 
 Then flash it with QMK Toolbox
