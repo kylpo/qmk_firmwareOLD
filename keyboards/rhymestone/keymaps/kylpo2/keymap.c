@@ -60,7 +60,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [_BASE] = LAYOUT(  // TODO: remove RESETs when done coding
                        //,---------------------------------------------------------------------------------------------------.
-        RESET /*XXXXXXX*/, KC_D, KC_H, KC_C, XXXXXXX, XXXXXXX, KC_L, KC_S, KC_R, RESET /*XXXXXXX*/,
+        /*RESET*/ XXXXXXX, KC_D, KC_H, KC_C, XXXXXXX, XXXXXXX, KC_L, KC_S, KC_R, /*RESET*/ XXXXXXX,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
         KC_F, KC_A, KC_E, KC_I, KC_U, KC_M, KC_N, KC_T, KC_O, KC_W,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
