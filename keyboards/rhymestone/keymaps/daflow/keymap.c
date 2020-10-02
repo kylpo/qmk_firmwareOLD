@@ -30,14 +30,14 @@
 
 enum layer_number { _BASE = 0, _ALTERNATE, _MOUSE };
 
-enum custom_keycodes { R4_C6 = SAFE_RANGE, A_R3_C1, A_R3_C10, A_R3_C2, A_R1_C2, A_R1_C3, A_R1_C4, A_R2_C2, A_R2_C3, A_R2_C4, A_R2_C5, A_R2_C6, A_R4_C1, A_R4_C10, A_R3_C3, A_R3_C4, A_R3_C5, A_R3_C6, A_R3_C8, A_R2_C10, A_R2_C1, A_R1_C7, A_R1_C9, M_R4_C6 };
+enum custom_keycodes { R4_C6 = SAFE_RANGE, R3_C1, R3_C10, A_R3_C1, A_R3_C10, A_R3_C2, R4_C5, A_R4_C5, A_R1_C2, A_R1_C3, A_R1_C4, A_R2_C2, A_R2_C3, A_R2_C4, A_R2_C5, A_R2_C6, A_R4_C1, A_R4_C10, A_R3_C3, A_R3_C4, A_R3_C5, A_R3_C6, A_R3_C8, A_R2_C10, A_R2_C1, A_R1_C7, A_R1_C9, M_R4_C6 };
 
 enum combos { NTO, AEI };
 
-#define R3_C1 LCTL_T(KC_Q)
-#define R3_C10 LGUI_T(KC_Z)
-#define R4_C5 LSFT_T(KC_DOT)
-#define A_R4_C5 LSFT_T(KC_COMMA)
+// #define R3_C1 LCTL_T(KC_Q)
+// #define R3_C10 LGUI_T(KC_Z)
+// #define R4_C5 LSFT_T(KC_DOT)
+// #define A_R4_C5 LSFT_T(KC_COMMA)
 
 const uint16_t PROGMEM aei_combo[] = {KC_A, KC_E, KC_I, COMBO_END};
 const uint16_t PROGMEM nto_combo[] = {KC_N, KC_T, KC_O, COMBO_END};
@@ -120,17 +120,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * |------+------+------+------+------|           |------+------+------+------+------|
      * |      |      |SCR v | CLICK|      |           |      | LEFT | DOWN | RIGHT|      |
      * |------+------+------+------+------|           |------+------+------+------+------|
-     * |      |      |      |      |      |           |      |      |      |      |      |
+     * |      |< SCR |      | SCR >|      |           |      |      |      |      |      |
      * |------+------+------+------+------|           |------+------+------+------+------|
      * |      |      |      | ▓▓▓▓ | SHFT |           |  ALT |      |      |      |      |
      * `----------------------------------'           `----------------------------------'
      */
     [_MOUSE] = LAYOUT(  //,---------------------------------------------------------------------------------------------------.
-        XXXXXXX, XXXXXXX, KC_WH_U, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_MS_U, XXXXXXX, XXXXXXX,
+        XXXXXXX, XXXXXXX, KC_WH_U, XXXXXXX, XXXXXXX, XXXXXXX, KC_F19, KC_MS_U, KC_F18, XXXXXXX,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
         XXXXXXX, KC_BTN2, KC_WH_D, KC_BTN1, XXXXXXX, XXXXXXX, KC_MS_L, KC_MS_D, KC_MS_R, XXXXXXX,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-        _______, KC_WH_L, KC_BTN3, KC_WH_R, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
+        _______, KC_WH_L, KC_BTN3, KC_WH_R, XXXXXXX, XXXXXXX, KC_F15, KC_F16, KC_F17, _______,
         //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_LSFT, _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX
         //,---------------------------------------------------------------------------------------------------.
@@ -141,13 +141,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     static bool is_clicking           = false;
     static bool is_ctl_down           = false;
     static bool is_cmd_down           = false;
+    static bool is_shift_down         = false;
+    static bool is_alt_down           = false;
     static bool has_ctl_been_used     = false;
     static bool has_cmd_been_used     = false;
+    static bool has_shift_been_used   = false;
+    static bool has_alt_been_used     = false;
     static bool should_reenable_mouse = false;
-
-    // Since we have an Alt layer with shift-inverted keys that unregister shift,
-    //   track whether the shift key is pressed separately from get_mods().
-    static bool is_shift_down = false;
 
     // if CTL+keycode was used, make sure CTL's tap value isn't sent
     if (is_ctl_down && !has_ctl_been_used && keycode != R3_C1 && keycode != A_R3_C1) {
@@ -159,17 +159,241 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         has_cmd_been_used = true;
     }
 
-    switch (keycode) {
-        case R4_C5:
-        case A_R4_C5: {
-            if (record->event.pressed) {
-                is_shift_down = true;
-            } else {
-                is_shift_down = false;
-            }
+    // if SHIFT+keycode was used, make sure SHIFT's tap value isn't sent
+    if (is_shift_down && !has_shift_been_used && keycode != R4_C5 && keycode != A_R4_C5) {
+        has_shift_been_used = true;
+    }
 
+    // if ALT+keycode was used, make sure ALT's tap value isn't sent
+    if (is_alt_down && !has_alt_been_used && keycode != R4_C6) {
+        has_alt_been_used = true;
+    }
+
+    switch (keycode) {
+        // case R4_C5:
+        // case A_R4_C5: {
+        //     if (record->event.pressed) {
+        //         is_shift_down = true;
+        //     } else {
+        //         is_shift_down = false;
+        //     }
+
+        //     return true;
+        // }
+        // -------------------------------------------
+        //   Base layer
+        // -------------------------------------------
+        // case R3_C1: {
+        //     if (record->event.pressed) {
+        //         is_ctl_down = true;
+
+        //         if (IS_LAYER_ON(_MOUSE)) {
+        //             layer_off(_MOUSE);
+        //             should_reenable_mouse = true;
+        //         }
+        //     } else {
+        //         is_ctl_down = false;
+        //         if (should_reenable_mouse) {
+        //             REENABLE_MOUSE();
+        //             should_reenable_mouse = false;
+        //         }
+        //     }
+        //     return true;
+        // }
+
+        // case R3_C10: {
+        //     if (record->event.pressed) {
+        //         is_cmd_down = true;
+
+        //         if (IS_LAYER_ON(_MOUSE)) {
+        //             layer_off(_MOUSE);
+        //             should_reenable_mouse = true;
+        //         }
+        //     } else {
+        //         is_cmd_down = false;
+        //         if (should_reenable_mouse) {
+        //             REENABLE_MOUSE();
+        //             // layer_on(_MOUSE);
+        //             should_reenable_mouse = false;
+        //         }
+        //     }
+        //     return true;
+        // }
+
+        // tap: (
+        // shift+tap: {
+        // hold: CTL
+        case R3_C1: {
+            static uint16_t r3_c1_timer;
+
+            if (record->event.pressed) {
+                r3_c1_timer = timer_read();
+                register_code(KC_LCTL);  // hold
+                is_ctl_down       = true;
+                has_ctl_been_used = false;
+
+                if (IS_LAYER_ON(_MOUSE)) {
+                    layer_off(_MOUSE);
+                    should_reenable_mouse = true;
+                }
+            } else {
+                unregister_code(KC_LCTL);
+                is_ctl_down = false;
+                if (!has_ctl_been_used && timer_elapsed(r3_c1_timer) < TAPPING_TERM && !should_reenable_mouse) {
+                    tap_code(KC_Q);
+                } else if (should_reenable_mouse) {
+                    REENABLE_MOUSE();
+                    should_reenable_mouse = false;
+                }
+            }
+            return false;
+        }
+        // tap: z
+        // shift+tap: Z
+        // hold: CMD
+        case R3_C10: {
+            static uint16_t r3_c10_timer;
+
+            if (record->event.pressed) {
+                r3_c10_timer = timer_read();
+                register_code(KC_LGUI);  // hold
+                is_cmd_down       = true;
+                has_cmd_been_used = false;
+
+                if (IS_LAYER_ON(_MOUSE)) {
+                    layer_off(_MOUSE);
+                    should_reenable_mouse = true;
+                }
+            } else {
+                unregister_code(KC_LGUI);
+                is_cmd_down = false;
+                if (!has_cmd_been_used && timer_elapsed(r3_c10_timer) < TAPPING_TERM && !should_reenable_mouse) {
+                    tap_code(KC_Z);
+                } else if (should_reenable_mouse) {
+                    REENABLE_MOUSE();
+                    should_reenable_mouse = false;
+                }
+            }
+            return false;
+        }
+
+        // tap: .
+        // hold: SHIFT
+        case R4_C5: {
+            static uint16_t r4_c5_timer;
+
+            if (record->event.pressed) {
+                r4_c5_timer = timer_read();
+                register_code(KC_LSHIFT);  // hold
+                is_shift_down       = true;
+                has_shift_been_used = false;
+
+            } else {
+                unregister_code(KC_LSHIFT);
+                is_shift_down = false;
+                if (!has_shift_been_used && timer_elapsed(r4_c5_timer) < TAPPING_TERM) {
+                    tap_code(KC_DOT);
+                }
+            }
+            return false;
+        }
+
+        // tap: Space
+        // shift+tap: Underscore
+        // hold: ALT
+        case R4_C6: {
+            static uint16_t r4_c6_timer;
+            static bool     r4_c6_did_disable_mouse = false;
+
+            if (record->event.pressed) {
+                r4_c6_timer = timer_read();
+                layer_on(_ALTERNATE);  // hold
+                is_alt_down       = true;
+                has_alt_been_used = false;
+
+                if (IS_LAYER_ON(_MOUSE)) {
+                    DISABLE_MOUSE();
+                    r4_c6_did_disable_mouse = true;
+                }
+
+            } else {
+                layer_off(_ALTERNATE);
+                is_alt_down = false;
+                if (!has_alt_been_used && !r4_c6_did_disable_mouse && timer_elapsed(r4_c6_timer) < TAPPING_TERM) {
+                    if (get_mods() & MOD_BIT(KC_LSHIFT)) {
+                        tap_code(KC_MINUS);  // shift + tap
+                    } else {
+                        tap_code(KC_SPACE);  // tap
+                    }
+                }
+                r4_c6_did_disable_mouse = false;  // reset bool
+            }
+            return false;
+        }
+
+        // Mouse-layer enables
+        // case KC_H: {
+        //     if (record->event.pressed && is_ctl_down) {
+        //         ENABLE_MOUSE();
+        //     }
+        //     return true;
+        // }
+        case KC_E: {
+            if (record->event.pressed && is_ctl_down) {
+                ENABLE_MOUSE();
+                return false;
+            }
             return true;
         }
+
+        // TODO: move this to Hammerspoon?
+        // When to prevent re-enabling mouse
+        // case KC_A: {
+        //     if (record->event.pressed && is_ctl_down && should_reenable_mouse) {
+        //         tap_code(KC_CAPS);
+        //         should_reenable_mouse = false;
+        //     }
+        //     return true;
+        // }
+
+        // Media
+        case KC_G: {
+            WHEN_CTRL(KC__VOLUP, KC_MEDIA_NEXT_TRACK)
+        }
+        case KC_F: {
+            WHEN_CTRL(KC__VOLDOWN, KC_MEDIA_PREV_TRACK)
+        }
+        case KC_U: {
+            WHEN_CTRL(KC__MUTE, KC_MEDIA_PLAY_PAUSE)
+        }
+
+            // CTRL O,N send ctrl tab
+            // case KC_O: {
+            //     if (is_ctl_down) {
+            //         if (record->event.pressed) {
+            //             register_code16(S(KC_TAB));
+            //         } else {
+            //             unregister_code16(S(KC_TAB));
+            //         }
+            //         return false;
+            //     }
+            //     return true;
+            // }
+            // case KC_N: {
+            //     if (is_ctl_down) {
+            //         if (record->event.pressed) {
+            //             register_code16(KC_TAB);
+            //         } else {
+            //             unregister_code16(KC_TAB);
+            //         }
+            //         return false;
+            //     }
+            //     return true;
+            // }
+
+        // -------------------------------------------
+        //   Mouse layer
+        // -------------------------------------------
         case KC_LSFT: {
             if (record->event.pressed) {
                 is_shift_down = true;
@@ -184,113 +408,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return !is_clicking;
         }
 
-        // -------------------------------------------
-        //   Base layer
-        // -------------------------------------------
-        case R3_C1: {
-            if (record->event.pressed) {
-                is_ctl_down = true;
-
-                if (IS_LAYER_ON(_MOUSE)) {
-                    layer_off(_MOUSE);
-                    should_reenable_mouse = true;
-                }
-            } else {
-                is_ctl_down = false;
-                if (should_reenable_mouse) {
-                    layer_on(_MOUSE);
-                    should_reenable_mouse = false;
-                }
-            }
-            return true;
-        }
-
-        case R3_C10: {
-            if (record->event.pressed) {
-                is_cmd_down = true;
-
-                if (IS_LAYER_ON(_MOUSE)) {
-                    layer_off(_MOUSE);
-                    should_reenable_mouse = true;
-                }
-            } else {
-                is_cmd_down = false;
-                if (should_reenable_mouse) {
-                    layer_on(_MOUSE);
-                    should_reenable_mouse = false;
-                }
-            }
-            return true;
-        }
-
-        // tap: Dot
-        // shift+tap: Colon
-        // hold: CTL
-        case R4_C6: {
-            static uint16_t r4_c6_timer;
-            static bool     r4_c6_did_disable_mouse = false;
-
-            if (record->event.pressed) {
-                r4_c6_timer = timer_read();
-                layer_on(_ALTERNATE);  // hold
-
-                if (IS_LAYER_ON(_MOUSE)) {
-                    DISABLE_MOUSE();
-                    r4_c6_did_disable_mouse = true;
-                }
-
-            } else {
-                layer_off(_ALTERNATE);
-                if (!r4_c6_did_disable_mouse && timer_elapsed(r4_c6_timer) < TAPPING_TERM) {
-                    if (get_mods() & MOD_BIT(KC_LSHIFT)) {
-                        tap_code(KC_MINUS);  // shift + tap
-                    } else {
-                        tap_code(KC_SPACE);  // tap
-                    }
-                }
-                r4_c6_did_disable_mouse = false;  // reset bool
-            }
-            return false;
-        }
-
-        // Mouse-layer enables
-        case KC_H: {
-            if (record->event.pressed && is_ctl_down) {
-                ENABLE_MOUSE();
-            }
-            return true;
-        }
-        case KC_E: {
-            if (record->event.pressed && is_ctl_down) {
-                ENABLE_MOUSE();
-                return false;
-            }
-            return true;
-        }
-
-        // When to prevent re-enabling mouse
-        case KC_A: {
-            if (record->event.pressed && is_ctl_down && should_reenable_mouse) {
-                tap_code(KC_CAPS);
-                should_reenable_mouse = false;
-            }
-            return true;
-        }
-
-        // Media
-        case KC_G: {
-            WHEN_CTRL(KC__VOLUP)
-        }
-        case KC_F: {
-            WHEN_CTRL(KC__VOLDOWN)
-        }
-        case KC_U: {
-            WHEN_CTRL(KC__MUTE)
-        }
-
-        // -------------------------------------------
-        //   Mouse layer
-        // -------------------------------------------
         case KC_BTN1: {
             if (record->event.pressed) {
                 is_clicking = true;
@@ -354,6 +471,28 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
         }
+
+        // tap: ,
+        // hold: SHIFT
+        case A_R4_C5: {
+            static uint16_t a_r4_c5_timer;
+
+            if (record->event.pressed) {
+                a_r4_c5_timer = timer_read();
+                register_code(KC_LSHIFT);  // hold
+                is_shift_down       = true;
+                has_shift_been_used = false;
+
+            } else {
+                unregister_code(KC_LSHIFT);
+                is_shift_down = false;
+                if (!has_shift_been_used && timer_elapsed(a_r4_c5_timer) < TAPPING_TERM) {
+                    tap_code(KC_COMMA);
+                }
+            }
+            return false;
+        }
+
         case A_R1_C2: {
             static bool is_a_r1_c2_shifted = false;
             ALT_SHIFT(SEND_STRING("*"), SEND_STRING("1"), is_a_r1_c2_shifted)
@@ -483,17 +622,31 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 // }
 
 // use Capslock to toggle MOUSE mode
-void led_set_user(uint8_t usb_led) {
+bool led_update_user(led_t led_state) {
 #ifdef CONSOLE_ENABLE
     uprintf("usb_led: %u\n", usb_led);
 #endif
 
-    if (usb_led & (1 << USB_LED_CAPS_LOCK)) {
+    if (led_state.caps_lock) {
         layer_on(_MOUSE);
     } else {
         layer_off(_MOUSE);
     }
+
+    return true;
 }
+
+// void led_set_user(uint8_t usb_led) {
+// #ifdef CONSOLE_ENABLE
+//     uprintf("usb_led: %u\n", usb_led);
+// #endif
+
+//     if (usb_led & (1 << USB_LED_CAPS_LOCK)) {
+//         layer_on(_MOUSE);
+//     } else {
+//         layer_off(_MOUSE);
+//     }
+// }
 
 void keyboard_post_init_user(void) {
 #ifdef CONSOLE_ENABLE

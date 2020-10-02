@@ -39,7 +39,7 @@
 
 #define MK_C_OFFSET_UNMOD 4     // cursor offset per movement (default: 16)
 #define MK_C_INTERVAL_UNMOD 16  // time between cursor movements (default: 16)
-#define MK_C_OFFSET_2 24
+#define MK_C_OFFSET_2 20        // (default: 32)
 
 // #define MK_COMBINED
 

@@ -21,29 +21,41 @@
 
 // Different keycode when Ctrl is pressed
 // Inspired by https://github.com/qmk/qmk_firmware/tree/master/users/spacebarracecar
-#define WHEN_CTRL(kc)               \
-    if (record->event.pressed) {    \
-        if (is_ctl_down) {          \
-            register_code(kc);      \
-        } else {                    \
-            register_code(keycode); \
-        }                           \
-    } else {                        \
-        unregister_code(kc);        \
-        unregister_code(keycode);   \
-    }                               \
+#define WHEN_CTRL(kc, shiftedKc)          \
+    if (record->event.pressed) {          \
+        if (is_ctl_down) {                \
+            if (is_shift_down) {          \
+                register_code(shiftedKc); \
+            } else {                      \
+                register_code(kc);        \
+            }                             \
+        } else {                          \
+            register_code(keycode);       \
+        }                                 \
+    } else {                              \
+        unregister_code(shiftedKc);       \
+        unregister_code(kc);              \
+        unregister_code(keycode);         \
+    }                                     \
     return false;
 
-#define ENABLE_MOUSE()          \
-    if (IS_LAYER_OFF(_MOUSE)) { \
-        /*layer_on(_MOUSE);*/   \
-        /*tap_code(KC_F13);*/   \
-        tap_code(KC_CAPS);      \
+#define ENABLE_MOUSE()                          \
+    if (!host_keyboard_led_state().caps_lock) { \
+        /*if (IS_LAYER_OFF(_MOUSE)) {*/         \
+        /*layer_on(_MOUSE);*/                   \
+        /*tap_code(KC_F13);*/                   \
+        tap_code(KC_CAPS);                      \
     }
 
-#define DISABLE_MOUSE()        \
-    if (IS_LAYER_ON(_MOUSE)) { \
-        /*layer_off(_MOUSE);*/ \
-        /*tap_code(KC_F13);*/  \
-        tap_code(KC_CAPS);     \
+#define DISABLE_MOUSE()                        \
+    if (host_keyboard_led_state().caps_lock) { \
+        /*if (IS_LAYER_ON(_MOUSE)) {*/         \
+        /*layer_off(_MOUSE);*/                 \
+        /*tap_code(KC_F13);*/                  \
+        tap_code(KC_CAPS);                     \
+    }
+
+#define REENABLE_MOUSE()                       \
+    if (host_keyboard_led_state().caps_lock) { \
+        layer_on(_MOUSE);                      \
     }
