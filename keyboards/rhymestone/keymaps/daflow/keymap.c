@@ -34,11 +34,6 @@ enum custom_keycodes { R4_C6 = SAFE_RANGE, R3_C1, R3_C10, A_R3_C1, A_R3_C10, A_R
 
 enum combos { NTO, AEI };
 
-// #define R3_C1 LCTL_T(KC_Q)
-// #define R3_C10 LGUI_T(KC_Z)
-// #define R4_C5 LSFT_T(KC_DOT)
-// #define A_R4_C5 LSFT_T(KC_COMMA)
-
 const uint16_t PROGMEM aei_combo[] = {KC_A, KC_E, KC_I, COMBO_END};
 const uint16_t PROGMEM nto_combo[] = {KC_N, KC_T, KC_O, COMBO_END};
 
@@ -170,56 +165,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 
     switch (keycode) {
-        // case R4_C5:
-        // case A_R4_C5: {
-        //     if (record->event.pressed) {
-        //         is_shift_down = true;
-        //     } else {
-        //         is_shift_down = false;
-        //     }
-
-        //     return true;
-        // }
         // -------------------------------------------
         //   Base layer
         // -------------------------------------------
-        // case R3_C1: {
-        //     if (record->event.pressed) {
-        //         is_ctl_down = true;
-
-        //         if (IS_LAYER_ON(_MOUSE)) {
-        //             layer_off(_MOUSE);
-        //             should_reenable_mouse = true;
-        //         }
-        //     } else {
-        //         is_ctl_down = false;
-        //         if (should_reenable_mouse) {
-        //             REENABLE_MOUSE();
-        //             should_reenable_mouse = false;
-        //         }
-        //     }
-        //     return true;
-        // }
-
-        // case R3_C10: {
-        //     if (record->event.pressed) {
-        //         is_cmd_down = true;
-
-        //         if (IS_LAYER_ON(_MOUSE)) {
-        //             layer_off(_MOUSE);
-        //             should_reenable_mouse = true;
-        //         }
-        //     } else {
-        //         is_cmd_down = false;
-        //         if (should_reenable_mouse) {
-        //             REENABLE_MOUSE();
-        //             // layer_on(_MOUSE);
-        //             should_reenable_mouse = false;
-        //         }
-        //     }
-        //     return true;
-        // }
-
         // tap: (
         // shift+tap: {
         // hold: CTL
@@ -332,12 +280,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
 
         // Mouse-layer enables
-        // case KC_H: {
-        //     if (record->event.pressed && is_ctl_down) {
-        //         ENABLE_MOUSE();
-        //     }
-        //     return true;
-        // }
         case KC_E: {
             if (record->event.pressed && is_ctl_down) {
                 ENABLE_MOUSE();
@@ -345,16 +287,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return true;
         }
-
-        // TODO: move this to Hammerspoon?
-        // When to prevent re-enabling mouse
-        // case KC_A: {
-        //     if (record->event.pressed && is_ctl_down && should_reenable_mouse) {
-        //         tap_code(KC_CAPS);
-        //         should_reenable_mouse = false;
-        //     }
-        //     return true;
-        // }
 
         // Media
         case KC_G: {
@@ -366,30 +298,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case KC_U: {
             WHEN_CTRL(KC__MUTE, KC_MEDIA_PLAY_PAUSE)
         }
-
-            // CTRL O,N send ctrl tab
-            // case KC_O: {
-            //     if (is_ctl_down) {
-            //         if (record->event.pressed) {
-            //             register_code16(S(KC_TAB));
-            //         } else {
-            //             unregister_code16(S(KC_TAB));
-            //         }
-            //         return false;
-            //     }
-            //     return true;
-            // }
-            // case KC_N: {
-            //     if (is_ctl_down) {
-            //         if (record->event.pressed) {
-            //             register_code16(KC_TAB);
-            //         } else {
-            //             unregister_code16(KC_TAB);
-            //         }
-            //         return false;
-            //     }
-            //     return true;
-            // }
 
         // -------------------------------------------
         //   Mouse layer
@@ -562,18 +470,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             static bool is_a_r3_c4_shifted = false;
             ALT_SHIFT(SEND_STRING("="), SEND_STRING("9"), is_a_r3_c4_shifted)
         }
-        // case A_R3_C5: {
-        //     static bool is_a_r3_c5_shifted = false;
-        //     ALT_SHIFT(SEND_STRING("["), SEND_STRING("<"), is_a_r3_c5_shifted)
-        // }
-        // case A_R3_C6: {
-        //     static bool is_a_r3_c6_shifted = false;
-        //     ALT_SHIFT(SEND_STRING("]"), SEND_STRING(">"), is_a_r3_c6_shifted)
-        // }
-        // case A_R3_C8: {
-        //     static bool is_a_r3_c8_shifted = false;
-        //     ALT_SHIFT(SEND_STRING("$"), SEND_STRING("\%"), is_a_r3_c8_shifted)
-        // }
         case KC_BSPC: {
             if (is_shift_down) {
                 if (record->event.pressed) {
@@ -610,17 +506,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
-// void process_combo_event(uint8_t combo_index, bool pressed) {
-//     // switch(combo_index) {
-//     //   case AEI: {
-
-//     //   }
-//     // }
-//     if (pressed) {
-//         ENABLE_MOUSE();
-//     }
-// }
-
 // use Capslock to toggle MOUSE mode
 bool led_update_user(led_t led_state) {
 #ifdef CONSOLE_ENABLE
@@ -635,18 +520,6 @@ bool led_update_user(led_t led_state) {
 
     return true;
 }
-
-// void led_set_user(uint8_t usb_led) {
-// #ifdef CONSOLE_ENABLE
-//     uprintf("usb_led: %u\n", usb_led);
-// #endif
-
-//     if (usb_led & (1 << USB_LED_CAPS_LOCK)) {
-//         layer_on(_MOUSE);
-//     } else {
-//         layer_off(_MOUSE);
-//     }
-// }
 
 void keyboard_post_init_user(void) {
 #ifdef CONSOLE_ENABLE
