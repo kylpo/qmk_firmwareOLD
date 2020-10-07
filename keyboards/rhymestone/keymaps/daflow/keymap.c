@@ -34,6 +34,8 @@ enum custom_keycodes { R4_C6 = SAFE_RANGE, R3_C1, R3_C10, A_R3_C1, A_R3_C10, A_R
 
 enum combos { NTO, AEI };
 
+#define M_CMD_CLICK LGUI(KC_MS_BTN1)
+
 const uint16_t PROGMEM aei_combo[] = {KC_A, KC_E, KC_I, COMBO_END};
 const uint16_t PROGMEM nto_combo[] = {KC_N, KC_T, KC_O, COMBO_END};
 
@@ -125,7 +127,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
         XXXXXXX, KC_BTN2, KC_WH_D, KC_BTN1, XXXXXXX, XXXXXXX, KC_MS_L, KC_MS_D, KC_MS_R, XXXXXXX,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-        _______, KC_WH_L, KC_BTN3, KC_WH_R, XXXXXXX, XXXXXXX, KC_F15, KC_F16, KC_F17, _______,
+        _______, KC_WH_L, M_CMD_CLICK, KC_WH_R, XXXXXXX, XXXXXXX, KC_F15, KC_F16, KC_F17, _______,
         //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_LSFT, _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX
         //,---------------------------------------------------------------------------------------------------.
