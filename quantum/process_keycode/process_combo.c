@@ -56,10 +56,14 @@ static inline void dump_key_buffer(bool emit) {
         return;
     }
 
+    print("DUMP");
+
     if (emit) {
         for (uint8_t i = 0; i < buffer_size; i++) {
 #ifdef COMBO_ALLOW_ACTION_KEYS
+
             const action_t action = store_or_get_action(key_buffer[i].event.pressed, key_buffer[i].event.key);
+            uprintf("action %u", action);
             process_action(&(key_buffer[i]), action);
 #else
             register_code16(key_buffer[i]);
@@ -125,6 +129,8 @@ bool process_combo(uint16_t keycode, keyrecord_t *record) {
     bool is_combo_key          = false;
     drop_buffer                = false;
     bool no_combo_keys_pressed = true;
+
+    print("process_combo\r");
 
     if (keycode == CMB_ON && record->event.pressed) {
         combo_enable();

@@ -37,6 +37,7 @@
 #define CHORD_1_2 KC_L
 
 void process_chorded_key_value(int value);
+bool process_chorded_result(int value);
 
 enum layer_number { _BASE = 0, _ALTERNATE, _MOUSE };
 
@@ -46,9 +47,9 @@ enum custom_keycodes { R4_C6 = SAFE_RANGE, R4_C1, R3_C1, R3_C10, A_R3_C1, A_R3_C
 
 enum combo_events { ZC_COPY, XV_PASTE };
 
-const uint16_t PROGMEM copy_combo[] = {KC_A, KC_E, KC_I, COMBO_END};
-// const uint16_t PROGMEM paste_combo[] = {A_R2_C2, A_R2_C3, A_R2_C4, COMBO_END};
-const uint16_t PROGMEM paste_combo[] = {KC_WH_U, KC_WH_D, COMBO_END};
+const uint16_t PROGMEM copy_combo[]  = {KC_A, KC_E, KC_I, COMBO_END};
+const uint16_t PROGMEM paste_combo[] = {A_R2_C2, A_R2_C3, A_R2_C4, COMBO_END};
+// const uint16_t PROGMEM paste_combo[] = {KC_WH_U, KC_WH_D, COMBO_END};
 
 combo_t key_combos[COMBO_COUNT] = {
     [ZC_COPY]  = COMBO_ACTION(copy_combo),
@@ -76,6 +77,11 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
 int             chord_value       = 0;
 int             first_chord_press = 0;
 static uint16_t chord_combo_timer;
+
+static uint16_t chord_value_buffer[MAX_COMBO_LENGTH];
+// static uint16_t record_buffer[MAX_COMBO_LENGTH];
+
+static uint8_t buffer_size = 0;
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /*
@@ -220,11 +226,49 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         //,---------------------------------------------------------------------------------------------------.
         )};
 
+// static uint16_t current_combo_index = 0;
+// extern int      COMBO_LEN;
+
 void matrix_scan_user(void) {
     if (timer_elapsed(chord_combo_timer) >= COMBO_TERM && chord_value != 0) {
-        process_chorded_key_value(chord_value);
+        bool completed_chord = process_chorded_result(chord_value);
+
         chord_value       = 0;
         first_chord_press = 0;
+
+        if (buffer_size == 0) {
+            return;
+        }
+
+        if (!completed_chord) {
+            for (uint8_t i = 0; i < buffer_size; i++) {
+                process_chorded_key_value(chord_value_buffer[i]);
+            }
+        }
+
+        // for (current_combo_index = 0; current_combo_index < COMBO_LEN; ++current_combo_index) {
+        //     combo_t *combo = &key_combos[current_combo_index];
+
+        //     uint8_t  count = 0;
+        //     uint16_t index = -1;
+
+        //     for (uint8_t i = 0; i < buffer_size; i++) {
+        //         /* Find index of keycode and number of combo keys */
+        //         for (const uint16_t *keys = combo->keys;; ++count) {
+        //             uint16_t key = pgm_read_word(&keys[count]);
+        //             if (chord_value_buffer[i].keycode == key) index = count;
+        //             if (COMBO_END == key) break;
+        //         }
+
+        //         /* Continue processing if not a combo key */
+        //         if (-1 == (int8_t)index) {
+        //             // process_record_user(&(key_buffer[i]), action);
+        //             process_chorded_key_value(chord_value_buffer[i]);
+        //         }
+        //     }
+        // }
+
+        buffer_size = 0;
     }
 }
 
@@ -240,6 +284,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     static bool has_shift_been_used   = false;
     static bool has_alt_been_used     = false;
     static bool should_reenable_mouse = false;
+    // bool        is_combo_key          = false;
+    // // drop_buffer                       = false;
+    // bool no_combo_keys_pressed = true;
+
+    // for (current_combo_index = 0; current_combo_index < COMBO_LEN; ++current_combo_index) {
+    //     combo_t *combo = &key_combos[current_combo_index];
+    //     is_combo_key |= process_single_combo(combo, keycode, record);
+    //     no_combo_keys_pressed = no_combo_keys_pressed && NO_COMBO_KEYS_ARE_DOWN;
+    // }
+
+    print("process_record_user\r");
 
     // if CTL+keycode was used, make sure CTL's tap value isn't sent
     if (is_ctl_down && !has_ctl_been_used && keycode != R3_C1 && keycode != A_R3_C1) {
@@ -575,7 +630,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     chord_combo_timer = timer_read();
                 }
                 if (timer_elapsed(chord_combo_timer) < COMBO_TERM) {
-                    chord_value = chord_value + 1;
+                    chord_value                       = chord_value + 1;
+                    chord_value_buffer[buffer_size++] = 1;
                 }
             }
 
@@ -596,7 +652,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     chord_combo_timer = timer_read();
                 }
                 if (timer_elapsed(chord_combo_timer) < COMBO_TERM) {
-                    chord_value = chord_value + 2;
+                    chord_value                       = chord_value + 2;
+                    chord_value_buffer[buffer_size++] = 2;
                 }
             }
 
@@ -615,16 +672,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     chord_combo_timer = timer_read();
                 }
                 if (timer_elapsed(chord_combo_timer) < COMBO_TERM) {
-                    chord_value = chord_value + 4;
+                    chord_value                       = chord_value + 4;
+                    chord_value_buffer[buffer_size++] = 4;
                 }
             }
 
             return false;
         }
-        // case A_R2_C4: {
-        //     static bool is_a_r2_c4_shifted = false;
-        //     ALT_SHIFT(SEND_STRING("-"), SEND_STRING("6"), is_a_r2_c4_shifted)
-        // }
         case A_R2_C5: {
             static bool is_a_r2_c5_shifted = false;
             ALT_SHIFT(SEND_STRING("["), SEND_STRING("<"), is_a_r2_c5_shifted)
@@ -730,23 +784,32 @@ void process_chorded_key_value(int value) {
         } else {
             SEND_STRING("-");
         }
-    } else if (value == 7) {
-        // chord 1 2 3
-        if (keyboard_report->mods & MOD_BIT(KC_LSFT)) {
-            SEND_STRING(SS_UP(X_LSFT) "^" SS_DOWN(X_LSFT));
-        } else {
-            SEND_STRING("~");
-        }
     } else {
         // unknown chord, possibly incomplete.
     }
 }
 
+bool process_chorded_result(int value) {
+    switch (value) {
+        case 7:
+            if (keyboard_report->mods & MOD_BIT(KC_LSFT)) {
+                SEND_STRING(SS_UP(X_LSFT) "^" SS_DOWN(X_LSFT));
+            } else {
+                SEND_STRING("~");
+            }
+
+            return true;
+
+        default:
+            return false;
+    }
+}
+
 void keyboard_post_init_user(void) {
 #ifdef CONSOLE_ENABLE
-    debug_enable   = true;
-    debug_matrix   = true;
-    debug_keyboard = true;
+    debug_enable = true;
+    // debug_matrix   = true;
+    // debug_keyboard = true;
 // debug_mouse=true;
 #endif
 }
