@@ -23,7 +23,7 @@
 // #define TAPPING_TOGGLE 1
 
 // https://github.com/qmk/qmk_firmware/blob/master/quantum/process_keycode/process_combo.h
-#define COMBO_COUNT 2
+#define COMBO_COUNT 4
 #define COMBO_ALLOW_ACTION_KEYS
 #define COMBO_TERM 60  // try 25?
 

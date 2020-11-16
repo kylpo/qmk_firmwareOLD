@@ -19,6 +19,21 @@
     }                                                            \
     return true;
 
+// send SEND_STRING() strings depending on whether shift is held
+#define NORM_SHIFT(norm_string, shift_string)                    \
+    if (keyboard_report->mods & MOD_BIT(KC_LSFT)) {              \
+        SEND_STRING(SS_UP(X_LSFT) shift_string SS_DOWN(X_LSFT)); \
+    } else {                                                     \
+        SEND_STRING(norm_string);                                \
+    }
+
+#define NORM_SHIFT_EVENT(norm_string, shift_string) \
+    if (record->event.pressed) {                    \
+        NORM_SHIFT(norm_string, shift_string)       \
+    }                                               \
+                                                    \
+    return true;
+
 // Different keycode when Ctrl is pressed
 // Inspired by https://github.com/qmk/qmk_firmware/tree/master/users/spacebarracecar
 #define WHEN_CTRL(kc, shiftedKc)          \

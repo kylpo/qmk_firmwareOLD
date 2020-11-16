@@ -45,15 +45,19 @@ enum custom_keycodes { R4_C6 = SAFE_RANGE, R4_C1, R3_C1, R3_C10, A_R3_C1, A_R3_C
 
 #define M_CMD_CLICK LGUI(KC_MS_BTN1)
 
-enum combo_events { ZC_COPY, XV_PASTE };
+enum combo_events { ZC_COPY, XV_PASTE, C_Q, C_BSLASH };
 
-const uint16_t PROGMEM copy_combo[]  = {KC_A, KC_E, KC_I, COMBO_END};
-const uint16_t PROGMEM paste_combo[] = {A_R2_C2, A_R2_C3, A_R2_C4, COMBO_END};
-// const uint16_t PROGMEM paste_combo[] = {KC_WH_U, KC_WH_D, COMBO_END};
+const uint16_t PROGMEM copy_combo[]   = {KC_A, KC_E, KC_I, COMBO_END};
+const uint16_t PROGMEM paste_combo[]  = {A_R2_C2, A_R2_C3, A_R2_C4, COMBO_END};
+const uint16_t PROGMEM q_combo[]      = {KC_O, KC_T, KC_SPACE, COMBO_END};
+const uint16_t PROGMEM bslash_combo[] = {KC_LEFT, KC_DOWN, KC_RIGHT, COMBO_END};
 
 combo_t key_combos[COMBO_COUNT] = {
     [ZC_COPY]  = COMBO_ACTION(copy_combo),
     [XV_PASTE] = COMBO_ACTION(paste_combo),
+    [C_Q]      = COMBO_ACTION(q_combo),
+    [C_BSLASH] = COMBO_ACTION(bslash_combo),
+
 };
 
 void process_combo_event(uint16_t combo_index, bool pressed) {
@@ -69,6 +73,16 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
         case XV_PASTE:
             if (pressed) {
                 tap_code16(KC_V);
+            }
+            break;
+        case C_Q:
+            if (pressed) {
+                tap_code16(KC_Q);
+            }
+            break;
+        case C_BSLASH:
+            if (pressed) {
+                tap_code16(KC_BSLASH);
             }
             break;
     }
@@ -398,17 +412,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         // tap: .
         // shift+tap: ,
         case R4_C1: {
-            // if (get_mods() & MOD_BIT(KC_LSHIFT)) {
-            //     unregister_code(KC_LSHIFT);
-            //     tap_code(KC_COMMA);  // shift + tap
-            //     register_code(KC_LSHIFT);
-            // } else {
-            //     tap_code(KC_DOT);  // tap
-            // }
-            // return false;
-
-            static bool is_r4_c1_shifted = false;
-            ALT_SHIFT(SEND_STRING("."), SEND_STRING(","), is_r4_c1_shifted)
+            NORM_SHIFT_EVENT(".", ",")
         }
 
         // hold: ALT
@@ -579,45 +583,39 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             // }
 
         case A_R1_C2: {
-            static bool is_a_r1_c2_shifted = false;
-            ALT_SHIFT(SEND_STRING("*"), SEND_STRING("1"), is_a_r1_c2_shifted)
+            NORM_SHIFT_EVENT("*", "1");
         }
         case A_R1_C3: {
-            static bool is_a_r1_c3_shifted = false;
-            ALT_SHIFT(SEND_STRING("/"), SEND_STRING("2"), is_a_r1_c3_shifted)
+            NORM_SHIFT_EVENT("/", "2");
         }
         case A_R1_C4: {
-            static bool is_a_r1_c4_shifted = false;
-            ALT_SHIFT(SEND_STRING("+"), SEND_STRING("3"), is_a_r1_c4_shifted)
+            NORM_SHIFT_EVENT("+", "3");
         }
-        case A_R1_C5: {
-            static bool is_a_r1_c5_shifted = false;
-            ALT_SHIFT(SEND_STRING("~"), SEND_STRING("^"), is_a_r1_c5_shifted)
-        }
-        case A_R1_C6: {
-            static bool is_a_r1_c6_shifted = false;
-            ALT_SHIFT(SEND_STRING(SS_TAP(X_TAB)), SEND_STRING("\\"), is_a_r1_c6_shifted)
-        }
+        // case A_R1_C5: {
+        //     NORM_SHIFT_EVENT("~", "^");
+        // }
+        // case A_R1_C6: {
+        //     NORM_SHIFT_EVENT(SS_TAP(X_TAB), "\\");
+        // }
         case A_R1_C7: {
             if (record->event.pressed) {
                 if (is_shift_down) {
-                    register_code(KC_TAB);
+                    SEND_STRING(SS_TAP(X_TAB));
+
                 } else {
+                    SEND_STRING(SS_TAP(X_ESC));
+
                     register_code(KC_ESC);
                 }
-            } else {
-                unregister_code(KC_TAB);
-                unregister_code(KC_ESC);
             }
-            return false;
+
+            return true;
         }
         case A_R1_C9: {
-            static bool is_a_r1_c9_shifted = false;
-            ALT_SHIFT(SEND_STRING(SS_TAP(X_ENT)), SEND_STRING(SS_TAP(X_TAB)), is_a_r1_c9_shifted);
+            NORM_SHIFT_EVENT(SS_TAP(X_ENT), SS_TAP(X_TAB));
         }
         case A_R2_C1: {
-            static bool is_a_r1_c1_shifted = false;
-            ALT_SHIFT(SEND_STRING("`"), SEND_STRING("0"), is_a_r1_c1_shifted)
+            NORM_SHIFT_EVENT("`", "0");
         }
         case A_R2_C2: {
             if (record->event.pressed) {
@@ -680,36 +678,28 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
         }
         case A_R2_C5: {
-            static bool is_a_r2_c5_shifted = false;
-            ALT_SHIFT(SEND_STRING("["), SEND_STRING("<"), is_a_r2_c5_shifted)
+            NORM_SHIFT_EVENT("[", "<");
         }
         case A_R2_C6: {
-            static bool is_a_r2_c6_shifted = false;
-            ALT_SHIFT(SEND_STRING("]"), SEND_STRING(">"), is_a_r2_c6_shifted)
+            NORM_SHIFT_EVENT("]", ">");
         }
         case A_R2_C10: {
-            static bool is_a_r2_c10_shifted = false;
-            ALT_SHIFT(SEND_STRING("@"), SEND_STRING("#"), is_a_r2_c10_shifted)
+            NORM_SHIFT_EVENT("@", "#");
         }
         case A_R3_C2: {
-            static bool is_a_r3_c2_shifted = false;
-            ALT_SHIFT(SEND_STRING("?"), SEND_STRING("7"), is_a_r3_c2_shifted)
+            NORM_SHIFT_EVENT("?", "7");
         }
         case A_R3_C3: {
-            static bool is_a_r3_c3_shifted = false;
-            ALT_SHIFT(SEND_STRING("!"), SEND_STRING("8"), is_a_r3_c3_shifted)
+            NORM_SHIFT_EVENT("!", "8");
         }
         case A_R3_C4: {
-            static bool is_a_r3_c4_shifted = false;
-            ALT_SHIFT(SEND_STRING("="), SEND_STRING("9"), is_a_r3_c4_shifted)
+            NORM_SHIFT_EVENT("=", "9");
         }
         case A_R3_C5: {
-            static bool is_a_r3_c5_shifted = false;
-            ALT_SHIFT(SEND_STRING("&"), SEND_STRING("$"), is_a_r3_c5_shifted)
+            NORM_SHIFT_EVENT("&", "$");
         }
         case A_R3_C6: {
-            static bool is_a_r3_c6_shifted = false;
-            ALT_SHIFT(SEND_STRING("|"), SEND_STRING("%"), is_a_r3_c6_shifted)
+            NORM_SHIFT_EVENT("|", "%");
         }
         case KC_BSPC: {
             if (is_shift_down) {
@@ -734,12 +724,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return true;
         }
         case A_R4_C1: {
-            static bool is_a_r4_c1_shifted = false;
-            ALT_SHIFT(SEND_STRING("("), SEND_STRING("{"), is_a_r4_c1_shifted)
+            NORM_SHIFT_EVENT("(", "{");
         }
         case A_R4_C10: {
-            static bool is_a_r4_c10_shifted = false;
-            ALT_SHIFT(SEND_STRING(")"), SEND_STRING("}"), is_a_r4_c10_shifted)
+            NORM_SHIFT_EVENT(")", "}");
         }
         default: {
             return true;
@@ -765,25 +753,13 @@ bool led_update_user(led_t led_state) {
 void process_chorded_key_value(int value) {
     if (value == 1) {
         // chord 1
-        if (keyboard_report->mods & MOD_BIT(KC_LSFT)) {
-            SEND_STRING(SS_UP(X_LSFT) "4" SS_DOWN(X_LSFT));
-        } else {
-            SEND_STRING("'");
-        }
+        NORM_SHIFT("'", "4")
     } else if (value == 2) {
         // chord 2
-        if (keyboard_report->mods & MOD_BIT(KC_LSFT)) {
-            SEND_STRING(SS_UP(X_LSFT) "5" SS_DOWN(X_LSFT));
-        } else {
-            SEND_STRING("\"");
-        }
+        NORM_SHIFT("\"", "5")
     } else if (value == 4) {
         // chord 3
-        if (keyboard_report->mods & MOD_BIT(KC_LSFT)) {
-            SEND_STRING(SS_UP(X_LSFT) "6" SS_DOWN(X_LSFT));
-        } else {
-            SEND_STRING("-");
-        }
+        NORM_SHIFT("-", "6")
     } else {
         // unknown chord, possibly incomplete.
     }
