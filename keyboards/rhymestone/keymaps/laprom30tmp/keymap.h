@@ -2,22 +2,15 @@
 
 #include "quantum.h"
 
-// send SEND_STRING() macros depending on whether shift is held
-#define ALT_SHIFT(alt_string_macro, shift_string_macro, shifted) \
-    if (record->event.pressed) {                                 \
-        if (is_shift_down) {                                     \
-            shifted = true;                                      \
-            unregister_code(KC_LSHIFT);                          \
-            shift_string_macro;                                  \
-        } else {                                                 \
-            alt_string_macro;                                    \
-        }                                                        \
-    } else {                                                     \
-        if (shifted && is_shift_down) {                          \
-            register_code(KC_LSHIFT);                            \
-        }                                                        \
-    }                                                            \
-    return true;
+#define CHORD_VALUE(value)                                             \
+    if (record->event.pressed) {                                       \
+        if (chord_value == 0) {                                        \
+            chord_combo_timer = timer_read();                          \
+        }                                                              \
+        chord_value                             = chord_value + value; \
+        chord_value_buffer[chord_buffer_size++] = value;               \
+    }                                                                  \
+    return false;
 
 // send SEND_STRING() strings depending on whether shift is held
 #define NORM_SHIFT(norm_string, shift_string)                    \
