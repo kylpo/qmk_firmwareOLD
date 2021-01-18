@@ -23,37 +23,16 @@
  * Also using only L_ because it simplifies code to only needing
  *   register/unregister, and not add_mods/del_mods/send_keyboard_report.
  *   The _mods() functions aren't even documented yet...
- *
- * For help on ALT-level COMBOs/Chords, see:
- * - https://github.com/qmk/qmk_firmware/blob/master/quantum/process_keycode/process_combo.c
- * - https://www.reddit.com/r/olkb/comments/cqt9ff/qmk_making_a_chorded_keymap/
- * - https://pastebin.com/ymtS5j5K
  */
 
 #include QMK_KEYBOARD_H
 #include "keymap.h"
 
-void process_incomplete_chord_value(int value);
-bool process_chord_result(int value);
+enum layer_number { _BASE = 0, _ALTERNATE, _MOUSE };
+
+enum custom_keycodes { R4_C6 = SAFE_RANGE, R4_C1, R3_C1, R3_C10, A_R3_C1, A_R3_C10, A_R3_C2, R4_C5, A_R4_C5, A_R1_C2, A_R1_C3, A_R1_C4, A_R1_C5, A_R1_C6, A_R2_C2, A_R2_C3, A_R2_C4, A_R2_C5, A_R2_C6, A_R4_C1, A_R4_C10, A_R3_C3, A_R3_C4, A_R3_C5, A_R3_C6, A_R3_C8, A_R2_C10, A_R2_C1, A_R1_C7, A_R1_C9, M_R4_C6 };
 
 #define M_CMD_CLICK LGUI(KC_MS_BTN1)
-
-enum layer_number { _BASE = 0, _ALTERNATE, _MOUSE };
-enum custom_keycodes { R4_C6 = SAFE_RANGE, R2_C7, R2_C8, R2_C9, R4_C1, R3_C1, R3_C10, A_R3_C1, A_R3_C10, A_R3_C2, R4_C5, A_R4_C5, A_R1_C2, A_R1_C3, A_R1_C4, A_R1_C5, A_R1_C6, A_R2_C2, A_R2_C3, A_R2_C4, A_R2_C5, A_R2_C6, A_R4_C1, A_R4_C10, A_R3_C3, A_R3_C4, A_R3_C5, A_R3_C6, A_R3_C8, A_R2_C10, A_R2_C1, A_R1_C7, A_R1_C9, M_R4_C6 };
-enum combo_events { C_Z, C_BSLASH };
-
-const uint16_t PROGMEM z_combo[]      = {KC_A, KC_E, KC_I, COMBO_END};
-const uint16_t PROGMEM bslash_combo[] = {KC_LEFT, KC_DOWN, KC_RIGHT, COMBO_END};
-
-combo_t key_combos[COMBO_COUNT] = {
-    [C_Z]      = COMBO_ACTION(z_combo),
-    [C_BSLASH] = COMBO_ACTION(bslash_combo),
-};
-
-int             chord_value = 0;
-static uint16_t chord_combo_timer;
-static uint16_t chord_value_buffer[MAX_COMBO_LENGTH];
-static uint8_t  chord_buffer_size = 0;
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /*
@@ -82,7 +61,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                        //,---------------------------------------------------------------------------------------------------.
         RESET /*XXXXXXX*/, KC_L, KC_S, KC_H, KC_Z, KC_Q, KC_R, KC_N, KC_C, RESET /*XXXXXXX*/,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-        KC_G, KC_A, KC_E, KC_I, KC_V, KC_K, R2_C7, R2_C8, R2_C9, KC_Y,
+        KC_G, KC_A, KC_E, KC_I, KC_V, KC_K, KC_O, KC_T, KC_SPACE, KC_Y,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
         KC_LCTL, KC_P, KC_U, KC_F, KC_X, KC_J, KC_M, KC_D, KC_W, KC_LCMD,
         //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
@@ -97,7 +76,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * |------+------+------+------+------|           |------+------+------+------+------|
      * |   `  |   '  |   "  |   -  |   [  |           |   ]  | LEFT | DOWN | RIGHT|   @  |
      * |------+------+------+------+------|           |------+------+------+------+------|
-     * |  OS  |   ?  |   !  |   =  |   &  |           |   |  | BKSP |   :  |  DEL |  APP |
+     * |  OS  |   ?  |   !  |   =  |   &  |           |   |  | BKSP |   ;  |  DEL |  APP |
      * |------+------+------+------+------|           |------+------+------+------+------|
      * |   (  |      |      |      | SHFT |           | ▓▓▓▓ |      |      |      |   )  |
      * `----------------------------------'           `----------------------------------'
@@ -108,17 +87,68 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * |------+------+------+------+------|           |------+------+------+------+------|
      * |   0  |   4  |   5  |   6  |   <  |           |   >  | LEFT | DOWN | RIGHT|   #  |
      * |------+------+------+------+------|           |------+------+------+------+------|
-     * |  OS  |   7  |   8  |   9  |   $  |           |   %  | BKSP |   ;  |  DEL |  APP |
+     * |  OS  |   7  |   8  |   9  |   $  |           |   %  | BKSP |   :  |  DEL |  APP |
      * |------+------+------+------+------|           |------+------+------+------+------|
      * |   {  |      |      |      | ▓▓▓▓ |           | ▓▓▓▓ |      |      |      |   }  |
      * `----------------------------------'           `----------------------------------'
      */
+
+    /*
+     *********************
+     * Other layout ideas
+     *********************
+     * ALT
+     * ,----------------------------------.           ,----------------------------------.
+     * |      |   *  |   /  |   +  |   ~  |           |  TAB |  ESC |  UP  |  ENT |      |
+     * |------+------+------+------+------|           |------+------+------+------+------|
+     * |   `  |   '  |   "  |   -  |   (  |           |   )  | LEFT | DOWN | RIGHT|   @  |
+     * |------+------+------+------+------|           |------+------+------+------+------|
+     * |  OS  |   ?  |   !  |   =  |   [  |           |   ]  | BKSP |   ;  |  DEL |  APP |
+     * |------+------+------+------+------|           |------+------+------+------+------|
+     * |   &  |      |      |      | SHFT |           | ▓▓▓▓ |      |      |      |   |  |
+     * `----------------------------------'           `----------------------------------'
+     *
+     * ALT - SHIFT
+     * ,----------------------------------.           ,----------------------------------.
+     * |      |   1  |   2  |   3  |   ^  |           |   \  | PREV |  UP  | NEXT |      |
+     * |------+------+------+------+------|           |------+------+------+------+------|
+     * |   0  |   4  |   5  |   4  |   {  |           |   }  | LEFT | DOWN | RIGHT|   #  |
+     * |------+------+------+------+------|           |------+------+------+------+------|
+     * |  OS  |   7  |   8  |   9  |   <  |           |   >  | BKSP |   :  |  DEL |  APP |
+     * |------+------+------+------+------|           |------+------+------+------+------|
+     * |   $  |      |      |      | ▓▓▓▓ |           | ▓▓▓▓ |      |      |      |   %  |
+     * `----------------------------------'           `----------------------------------'
+     *
+     *
+     *
+     * ALT
+     * ,----------------------------------.           ,----------------------------------.
+     * |      |   *  |   /  |   +  |   ~  |           |  TAB |  ESC |  UP  |  ENT |      |
+     * |------+------+------+------+------|           |------+------+------+------+------|
+     * |   `  |   '  |   "  |   -  |   (  |           |   )  | LEFT | DOWN | RIGHT|   @  |
+     * |------+------+------+------+------|           |------+------+------+------+------|
+     * |  OS  |   ?  |   !  |   =  |   [  |           |   ]  | BKSP |   |  |  DEL |  APP |
+     * |------+------+------+------+------|           |------+------+------+------+------|
+     * |   :  |      |      |      | SHFT |           | ▓▓▓▓ |      |      |      |   $  |
+     * `----------------------------------'           `----------------------------------'
+     *
+     * ALT - SHIFT
+     * ,----------------------------------.           ,----------------------------------.
+     * |      |   1  |   2  |   3  |   ^  |           |   \  | PREV |  UP  | NEXT |      |
+     * |------+------+------+------+------|           |------+------+------+------+------|
+     * |   0  |   4  |   5  |   4  |   {  |           |   }  | LEFT | DOWN | RIGHT|   #  |
+     * |------+------+------+------+------|           |------+------+------+------+------|
+     * |  OS  |   7  |   8  |   9  |   <  |           |   >  | BKSP |   &  |  DEL |  APP |
+     * |------+------+------+------+------|           |------+------+------+------+------|
+     * |   ;  |      |      |      | ▓▓▓▓ |           | ▓▓▓▓ |      |      |      |   %  |
+     * `----------------------------------'           `----------------------------------'
+     */
     [_ALTERNATE] = LAYOUT(  //,---------------------------------------------------------------------------------------------------.
-        XXXXXXX, A_R1_C2, A_R1_C3, A_R1_C4, XXXXXXX, XXXXXXX, A_R1_C7, KC_UP, A_R1_C9, XXXXXXX,
+        XXXXXXX, A_R1_C2, A_R1_C3, A_R1_C4, A_R1_C5, A_R1_C6, A_R1_C7, KC_UP, A_R1_C9, XXXXXXX,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
         A_R2_C1, A_R2_C2, A_R2_C3, A_R2_C4, A_R2_C5, A_R2_C6, KC_LEFT, KC_DOWN, KC_RGHT, A_R2_C10,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-        _______, A_R3_C2, A_R3_C3, A_R3_C4, A_R3_C5, A_R3_C6, KC_BSPC, A_R3_C8, KC_DEL, _______,
+        _______, A_R3_C2, A_R3_C3, A_R3_C4, A_R3_C5, A_R3_C6, KC_BSPC, KC_SCLN, KC_DEL, _______,
         //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
         A_R4_C1, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______, XXXXXXX, XXXXXXX, XXXXXXX, A_R4_C10
         //,---------------------------------------------------------------------------------------------------.
@@ -185,7 +215,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         //   Base layer
         // -------------------------------------------
         case KC_LCTL: {
+            // static uint16_t r3_c1_timer;
+
             if (record->event.pressed) {
+                // r3_c1_timer = timer_read();
+                // register_code(KC_LCTL);  // hold
                 is_ctl_down       = true;
                 has_ctl_been_used = false;
 
@@ -194,7 +228,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     should_reenable_mouse = true;
                 }
             } else {
+                // unregister_code(KC_LCTL);
                 is_ctl_down = false;
+                // if (!has_ctl_been_used && timer_elapsed(r3_c1_timer) < TAPPING_TERM && !should_reenable_mouse) {
+                //     tap_code(KC_Q);
+                // } else
                 if (should_reenable_mouse) {
                     REENABLE_MOUSE();
                     should_reenable_mouse = false;
@@ -203,7 +241,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return true;
         }
         case KC_LCMD: {
+            // static uint16_t r3_c10_timer;
+
             if (record->event.pressed) {
+                // r3_c10_timer = timer_read();
+                // register_code(KC_LGUI);  // hold
                 is_cmd_down       = true;
                 has_cmd_been_used = false;
 
@@ -212,7 +254,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     should_reenable_mouse = true;
                 }
             } else {
+                // unregister_code(KC_LGUI);
                 is_cmd_down = false;
+                // if (!has_cmd_been_used && timer_elapsed(r3_c10_timer) < TAPPING_TERM && !should_reenable_mouse) {
+                //     tap_code(KC_Z);
+                // } else
                 if (should_reenable_mouse) {
                     REENABLE_MOUSE();
                     should_reenable_mouse = false;
@@ -222,47 +268,70 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
 
         case KC_LSFT: {
+            // static uint16_t r4_c5_timer;
+
             if (record->event.pressed) {
+                // r4_c5_timer = timer_read();
+                // register_code(KC_LSHIFT);  // hold
                 is_shift_down       = true;
                 has_shift_been_used = false;
 
                 // shift speeds up mouse movement.
                 register_code(KC_ACL2);
             } else {
+                // unregister_code(KC_LSHIFT);
                 unregister_code(KC_ACL2);
                 is_shift_down = false;
+                // if (!has_shift_been_used && timer_elapsed(r4_c5_timer) < TAPPING_TERM) {
+                //     tap_code(KC_DOT);
+                // }
             }
             return true;
         }
 
-        case R2_C7: {
-            CHORD_VALUE(2)
-        }
-        case R2_C8: {
-            CHORD_VALUE(20)
-        }
-        case R2_C9: {
-            CHORD_VALUE(200)
-        }
-
+        // tap: .
+        // shift+tap: ,
         case R4_C1: {
-            NORM_SHIFT_EVENT(".", ",")
+            // if (get_mods() & MOD_BIT(KC_LSHIFT)) {
+            //     unregister_code(KC_LSHIFT);
+            //     tap_code(KC_COMMA);  // shift + tap
+            //     register_code(KC_LSHIFT);
+            // } else {
+            //     tap_code(KC_DOT);  // tap
+            // }
+            // return false;
+
+            static bool is_r4_c1_shifted = false;
+            ALT_SHIFT(SEND_STRING("."), SEND_STRING(","), is_r4_c1_shifted)
         }
 
         // hold: ALT
         case R4_C6: {
+            // static uint16_t r4_c6_timer;
+            // static bool r4_c6_did_disable_mouse = false;
+
             if (record->event.pressed) {
+                // r4_c6_timer = timer_read();
                 layer_on(_ALTERNATE);  // hold
                 is_alt_down       = true;
                 has_alt_been_used = false;
 
                 if (IS_LAYER_ON(_MOUSE)) {
                     DISABLE_MOUSE();
+                    // r4_c6_did_disable_mouse = true;
                 }
 
             } else {
                 layer_off(_ALTERNATE);
                 is_alt_down = false;
+                // if (!has_alt_been_used && !r4_c6_did_disable_mouse && timer_elapsed(r4_c6_timer) < TAPPING_TERM) {
+                //     if (get_mods() & MOD_BIT(KC_LSHIFT)) {
+                //         tap_code(KC_MINUS);  // shift + tap
+                //     } else {
+                //         tap_code(KC_SPACE);  // tap
+                //     }
+                // }
+                // r4_c6_did_disable_mouse = false;  // reset bool
             }
             return false;
         }
@@ -381,65 +450,112 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
         }
+
+            // // tap: ,
+            // // hold: SHIFT
+            // case A_R4_C5: {
+            //     static uint16_t a_r4_c5_timer;
+
+            //     if (record->event.pressed) {
+            //         a_r4_c5_timer = timer_read();
+            //         register_code(KC_LSHIFT);  // hold
+            //         is_shift_down       = true;
+            //         has_shift_been_used = false;
+
+            //     } else {
+            //         unregister_code(KC_LSHIFT);
+            //         is_shift_down = false;
+            //         if (!has_shift_been_used && timer_elapsed(a_r4_c5_timer) < TAPPING_TERM) {
+            //             tap_code(KC_COMMA);
+            //         }
+            //     }
+            //     return false;
+            // }
+
         case A_R1_C2: {
-            NORM_SHIFT_EVENT("*", "1");
+            static bool is_a_r1_c2_shifted = false;
+            ALT_SHIFT(SEND_STRING("*"), SEND_STRING("1"), is_a_r1_c2_shifted)
         }
         case A_R1_C3: {
-            NORM_SHIFT_EVENT("/", "2");
+            static bool is_a_r1_c3_shifted = false;
+            ALT_SHIFT(SEND_STRING("/"), SEND_STRING("2"), is_a_r1_c3_shifted)
         }
         case A_R1_C4: {
-            NORM_SHIFT_EVENT("+", "3");
+            static bool is_a_r1_c4_shifted = false;
+            ALT_SHIFT(SEND_STRING("+"), SEND_STRING("3"), is_a_r1_c4_shifted)
+        }
+        case A_R1_C5: {
+            static bool is_a_r1_c5_shifted = false;
+            ALT_SHIFT(SEND_STRING("~"), SEND_STRING("^"), is_a_r1_c5_shifted)
+        }
+        case A_R1_C6: {
+            static bool is_a_r1_c6_shifted = false;
+            ALT_SHIFT(SEND_STRING(SS_TAP(X_TAB)), SEND_STRING("\\"), is_a_r1_c6_shifted)
         }
         case A_R1_C7: {
             if (record->event.pressed) {
                 if (is_shift_down) {
-                    SEND_STRING(SS_TAP(X_TAB));
-
+                    register_code(KC_TAB);
                 } else {
-                    SEND_STRING(SS_TAP(X_ESC));
+                    register_code(KC_ESC);
                 }
+            } else {
+                unregister_code(KC_TAB);
+                unregister_code(KC_ESC);
             }
-
-            return true;
+            return false;
         }
         case A_R1_C9: {
-            NORM_SHIFT_EVENT(SS_TAP(X_ENT), SS_TAP(X_TAB));
+            static bool is_a_r1_c9_shifted = false;
+            ALT_SHIFT(SEND_STRING(SS_TAP(X_ENT)), SEND_STRING(SS_TAP(X_TAB)), is_a_r1_c9_shifted);
         }
         case A_R2_C1: {
-            NORM_SHIFT_EVENT("`", "0");
+            static bool is_a_r1_c1_shifted = false;
+            ALT_SHIFT(SEND_STRING("`"), SEND_STRING("0"), is_a_r1_c1_shifted)
         }
         case A_R2_C2: {
-            CHORD_VALUE(1)
+            static bool is_a_r2_c2_shifted = false;
+            ALT_SHIFT(SEND_STRING("'"), SEND_STRING("4"), is_a_r2_c2_shifted)
         }
         case A_R2_C3: {
-            CHORD_VALUE(10)
+            static bool is_a_r2_c3_shifted = false;
+            ALT_SHIFT(SEND_STRING("\""), SEND_STRING("5"), is_a_r2_c3_shifted)
         }
         case A_R2_C4: {
-            CHORD_VALUE(100)
+            static bool is_a_r2_c4_shifted = false;
+            ALT_SHIFT(SEND_STRING("-"), SEND_STRING("6"), is_a_r2_c4_shifted)
         }
         case A_R2_C5: {
-            NORM_SHIFT_EVENT("[", "<");
+            static bool is_a_r2_c5_shifted = false;
+            ALT_SHIFT(SEND_STRING("["), SEND_STRING("<"), is_a_r2_c5_shifted)
         }
         case A_R2_C6: {
-            NORM_SHIFT_EVENT("]", ">");
+            static bool is_a_r2_c6_shifted = false;
+            ALT_SHIFT(SEND_STRING("]"), SEND_STRING(">"), is_a_r2_c6_shifted)
         }
         case A_R2_C10: {
-            NORM_SHIFT_EVENT("@", "#");
+            static bool is_a_r2_c10_shifted = false;
+            ALT_SHIFT(SEND_STRING("@"), SEND_STRING("#"), is_a_r2_c10_shifted)
         }
         case A_R3_C2: {
-            NORM_SHIFT_EVENT("?", "7");
+            static bool is_a_r3_c2_shifted = false;
+            ALT_SHIFT(SEND_STRING("?"), SEND_STRING("7"), is_a_r3_c2_shifted)
         }
         case A_R3_C3: {
-            NORM_SHIFT_EVENT("!", "8");
+            static bool is_a_r3_c3_shifted = false;
+            ALT_SHIFT(SEND_STRING("!"), SEND_STRING("8"), is_a_r3_c3_shifted)
         }
         case A_R3_C4: {
-            NORM_SHIFT_EVENT("=", "9");
+            static bool is_a_r3_c4_shifted = false;
+            ALT_SHIFT(SEND_STRING("="), SEND_STRING("9"), is_a_r3_c4_shifted)
         }
         case A_R3_C5: {
-            NORM_SHIFT_EVENT("&", "$");
+            static bool is_a_r3_c5_shifted = false;
+            ALT_SHIFT(SEND_STRING("&"), SEND_STRING("$"), is_a_r3_c5_shifted)
         }
         case A_R3_C6: {
-            NORM_SHIFT_EVENT("|", "%");
+            static bool is_a_r3_c6_shifted = false;
+            ALT_SHIFT(SEND_STRING("|"), SEND_STRING("%"), is_a_r3_c6_shifted)
         }
         case KC_BSPC: {
             if (is_shift_down) {
@@ -451,9 +567,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 return false;
             }
             return true;
-        }
-        case A_R3_C8: {
-            NORM_SHIFT_EVENT(":", ";");
         }
         case KC_DEL: {
             if (is_shift_down) {
@@ -467,10 +580,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return true;
         }
         case A_R4_C1: {
-            NORM_SHIFT_EVENT("(", "{");
+            static bool is_a_r4_c1_shifted = false;
+            ALT_SHIFT(SEND_STRING("("), SEND_STRING("{"), is_a_r4_c1_shifted)
         }
         case A_R4_C10: {
-            NORM_SHIFT_EVENT(")", "}");
+            static bool is_a_r4_c10_shifted = false;
+            ALT_SHIFT(SEND_STRING(")"), SEND_STRING("}"), is_a_r4_c10_shifted)
         }
         default: {
             return true;
@@ -478,88 +593,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
-void process_combo_event(uint16_t combo_index, bool pressed) {
-#ifdef CONSOLE_ENABLE
-    uprintf("combo_index: %u\n", combo_index);
-#endif
-    switch (combo_index) {
-        case C_Z:
-            if (pressed) {
-                tap_code(KC_Z);
-            }
-            break;
-        case C_BSLASH:
-            if (pressed) {
-                tap_code(KC_BSLASH);
-            }
-            break;
-    }
-}
-
-void matrix_scan_user(void) {
-    if (timer_elapsed(chord_combo_timer) >= COMBO_TERM && chord_value != 0) {
-        bool completed_chord = process_chord_result(chord_value);
-
-        chord_value = 0;
-
-        if (chord_buffer_size == 0) {
-            return;
-        }
-
-        // Replay keycodes of incomplete chord
-        if (!completed_chord) {
-            for (uint8_t i = 0; i < chord_buffer_size; i++) {
-                process_incomplete_chord_value(chord_value_buffer[i]);
-            }
-        }
-
-        chord_buffer_size = 0;
-    }
-}
-
-bool process_chord_result(int value) {
-    switch (value) {
-        case 111:
-            NORM_SHIFT("~", "^")
-            return true;
-        case 222:
-            tap_code(KC_Q);
-            return true;
-        default:
-            return false;
-    }
-}
-
-void process_incomplete_chord_value(int value) {
-    switch (value) {
-        case 1:
-            NORM_SHIFT("'", "4")
-            break;
-        case 10:
-            NORM_SHIFT("\"", "5")
-            break;
-        case 100:
-            NORM_SHIFT("-", "6")
-            break;
-        case 2:
-            tap_code(KC_O);
-            break;
-        case 20:
-            tap_code(KC_T);
-            break;
-        case 200:
-            NORM_SHIFT(SS_TAP(X_SPACE), "_")
-            break;
-        default:
-            // unknown chord, possibly incomplete.
-            break;
-    }
-}
-
 // use Capslock to toggle MOUSE mode
 bool led_update_user(led_t led_state) {
 #ifdef CONSOLE_ENABLE
-    uprintf("led_state: %u\n", led_state);
+    uprintf("usb_led: %u\n", usb_led);
 #endif
 
     if (led_state.caps_lock) {
@@ -573,9 +610,9 @@ bool led_update_user(led_t led_state) {
 
 void keyboard_post_init_user(void) {
 #ifdef CONSOLE_ENABLE
-    debug_enable   = true;
-    debug_matrix   = true;
-    debug_keyboard = true;
+    debug_enable = true;
+    debug_matrix = true;
+// debug_keyboard=true;
 // debug_mouse=true;
 #endif
 }

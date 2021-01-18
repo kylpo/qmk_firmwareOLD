@@ -22,10 +22,6 @@
 
 // #define TAPPING_TOGGLE 1
 
-// https://github.com/qmk/qmk_firmware/blob/master/quantum/process_keycode/process_combo.h
-// #define COMBO_COUNT 6
-// #define COMBO_TERM 40  // try 25?
-
 /* Mouse stuff */
 /* from https://www.reddit.com/r/olkb/comments/72u8ou/qmk_mouse_keys_rock/ */
 // #define MOUSEKEY_INTERVAL 16

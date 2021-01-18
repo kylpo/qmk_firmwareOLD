@@ -2,29 +2,21 @@
 
 #include "quantum.h"
 
-#define CHORD_VALUE(value)                                             \
-    if (record->event.pressed) {                                       \
-        if (chord_value == 0) {                                        \
-            chord_combo_timer = timer_read();                          \
-        }                                                              \
-        chord_value                             = chord_value + value; \
-        chord_value_buffer[chord_buffer_size++] = value;               \
-    }                                                                  \
-    return false;
-
-// send SEND_STRING() strings depending on whether shift is held
-#define NORM_SHIFT(norm_string, shift_string)                    \
-    if (keyboard_report->mods & MOD_BIT(KC_LSFT)) {              \
-        SEND_STRING(SS_UP(X_LSFT) shift_string SS_DOWN(X_LSFT)); \
+// send SEND_STRING() macros depending on whether shift is held
+#define ALT_SHIFT(alt_string_macro, shift_string_macro, shifted) \
+    if (record->event.pressed) {                                 \
+        if (is_shift_down) {                                     \
+            shifted = true;                                      \
+            unregister_code(KC_LSHIFT);                          \
+            shift_string_macro;                                  \
+        } else {                                                 \
+            alt_string_macro;                                    \
+        }                                                        \
     } else {                                                     \
-        SEND_STRING(norm_string);                                \
-    }
-
-#define NORM_SHIFT_EVENT(norm_string, shift_string) \
-    if (record->event.pressed) {                    \
-        NORM_SHIFT(norm_string, shift_string)       \
-    }                                               \
-                                                    \
+        if (shifted && is_shift_down) {                          \
+            register_code(KC_LSHIFT);                            \
+        }                                                        \
+    }                                                            \
     return true;
 
 // Different keycode when Ctrl is pressed
