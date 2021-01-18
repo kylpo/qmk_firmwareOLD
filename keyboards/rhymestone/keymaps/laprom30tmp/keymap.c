@@ -50,7 +50,6 @@ combo_t key_combos[COMBO_COUNT] = {
     [C_Z]      = COMBO_ACTION(z_combo),
     [C_Q]      = COMBO_ACTION(q_combo),
     [C_BSLASH] = COMBO_ACTION(bslash_combo),
-
 };
 
 int             chord_value = 0;
@@ -100,7 +99,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * |------+------+------+------+------|           |------+------+------+------+------|
      * |   `  |   '  |   "  |   -  |   [  |           |   ]  | LEFT | DOWN | RIGHT|   @  |
      * |------+------+------+------+------|           |------+------+------+------+------|
-     * |  OS  |   ?  |   !  |   =  |   &  |           |   |  | BKSP |   ;  |  DEL |  APP |
+     * |  OS  |   ?  |   !  |   =  |   &  |           |   |  | BKSP |   :  |  DEL |  APP |
      * |------+------+------+------+------|           |------+------+------+------+------|
      * |   (  |      |      |      | SHFT |           | ▓▓▓▓ |      |      |      |   )  |
      * `----------------------------------'           `----------------------------------'
@@ -111,7 +110,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * |------+------+------+------+------|           |------+------+------+------+------|
      * |   0  |   4  |   5  |   6  |   <  |           |   >  | LEFT | DOWN | RIGHT|   #  |
      * |------+------+------+------+------|           |------+------+------+------+------|
-     * |  OS  |   7  |   8  |   9  |   $  |           |   %  | BKSP |   :  |  DEL |  APP |
+     * |  OS  |   7  |   8  |   9  |   $  |           |   %  | BKSP |   ;  |  DEL |  APP |
      * |------+------+------+------+------|           |------+------+------+------+------|
      * |   {  |      |      |      | ▓▓▓▓ |           | ▓▓▓▓ |      |      |      |   }  |
      * `----------------------------------'           `----------------------------------'
@@ -121,7 +120,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
         A_R2_C1, A_R2_C2, A_R2_C3, A_R2_C4, A_R2_C5, A_R2_C6, KC_LEFT, KC_DOWN, KC_RGHT, A_R2_C10,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-        _______, A_R3_C2, A_R3_C3, A_R3_C4, A_R3_C5, A_R3_C6, KC_BSPC, KC_SCLN, KC_DEL, _______,
+        _______, A_R3_C2, A_R3_C3, A_R3_C4, A_R3_C5, A_R3_C6, KC_BSPC, A_R3_C8, KC_DEL, _______,
         //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
         A_R4_C1, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______, XXXXXXX, XXXXXXX, XXXXXXX, A_R4_C10
         //,---------------------------------------------------------------------------------------------------.
@@ -187,6 +186,20 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         // -------------------------------------------
         //   Base layer
         // -------------------------------------------
+        case KC_SPACE: {
+            if (keyboard_report->mods & MOD_BIT(KC_LSFT)) {
+                if (record->event.pressed) {
+                    register_code(KC_MINUS);
+                } else {
+                    unregister_code(KC_MINUS);
+                }
+
+                return false;
+            } else {
+                return true;
+            }
+        }
+
         case KC_LCTL: {
             if (record->event.pressed) {
                 is_ctl_down       = true;
@@ -390,8 +403,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
                 } else {
                     SEND_STRING(SS_TAP(X_ESC));
-
-                    register_code(KC_ESC);
                 }
             }
 
@@ -446,6 +457,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 return false;
             }
             return true;
+        }
+        case A_R3_C8: {
+            NORM_SHIFT_EVENT(":", ";");
         }
         case KC_DEL: {
             if (is_shift_down) {

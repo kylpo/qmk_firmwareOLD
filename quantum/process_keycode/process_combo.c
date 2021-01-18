@@ -63,7 +63,9 @@ static inline void dump_key_buffer(bool emit) {
 #ifdef COMBO_ALLOW_ACTION_KEYS
 
             const action_t action = store_or_get_action(key_buffer[i].event.pressed, key_buffer[i].event.key);
+#    ifdef CONSOLE_ENABLE
             uprintf("action %u", action);
+#    endif
             process_action(&(key_buffer[i]), action);
 #else
             register_code16(key_buffer[i]);
