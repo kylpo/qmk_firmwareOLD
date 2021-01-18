@@ -133,9 +133,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // Key macros
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     static bool is_ctl_down           = false;
-    static bool is_cmd_down           = false;
     static bool is_shift_down         = false;
-    static bool is_alt_down           = false;
     static bool should_reenable_mouse = false;
 
     switch (keycode) {
@@ -175,14 +173,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
         case KC_LCMD: {
             if (record->event.pressed) {
-                is_cmd_down = true;
-
                 if (IS_LAYER_ON(_MOUSE)) {
                     layer_off(_MOUSE);
                     should_reenable_mouse = true;
                 }
             } else {
-                is_cmd_down = false;
                 if (should_reenable_mouse) {
                     REENABLE_MOUSE();
                     should_reenable_mouse = false;
@@ -212,7 +207,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case R4_C6: {
             if (record->event.pressed) {
                 layer_on(_ALTERNATE);  // hold
-                is_alt_down = true;
 
                 if (IS_LAYER_ON(_MOUSE)) {
                     DISABLE_MOUSE();
@@ -220,7 +214,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
             } else {
                 layer_off(_ALTERNATE);
-                is_alt_down = false;
             }
             return false;
         }
