@@ -39,16 +39,14 @@ bool process_chord_result(int value);
 #define M_CMD_CLICK LGUI(KC_MS_BTN1)
 
 enum layer_number { _BASE = 0, _ALTERNATE, _MOUSE };
-enum custom_keycodes { R4_C6 = SAFE_RANGE, R4_C1, R3_C1, R3_C10, A_R3_C1, A_R3_C10, A_R3_C2, R4_C5, A_R4_C5, A_R1_C2, A_R1_C3, A_R1_C4, A_R1_C5, A_R1_C6, A_R2_C2, A_R2_C3, A_R2_C4, A_R2_C5, A_R2_C6, A_R4_C1, A_R4_C10, A_R3_C3, A_R3_C4, A_R3_C5, A_R3_C6, A_R3_C8, A_R2_C10, A_R2_C1, A_R1_C7, A_R1_C9, M_R4_C6 };
-enum combo_events { C_Z, C_Q, C_BSLASH };
+enum custom_keycodes { R4_C6 = SAFE_RANGE, R2_C7, R2_C8, R2_C9, R4_C1, R3_C1, R3_C10, A_R3_C1, A_R3_C10, A_R3_C2, R4_C5, A_R4_C5, A_R1_C2, A_R1_C3, A_R1_C4, A_R1_C5, A_R1_C6, A_R2_C2, A_R2_C3, A_R2_C4, A_R2_C5, A_R2_C6, A_R4_C1, A_R4_C10, A_R3_C3, A_R3_C4, A_R3_C5, A_R3_C6, A_R3_C8, A_R2_C10, A_R2_C1, A_R1_C7, A_R1_C9, M_R4_C6 };
+enum combo_events { C_Z, C_BSLASH };
 
 const uint16_t PROGMEM z_combo[]      = {KC_A, KC_E, KC_I, COMBO_END};
-const uint16_t PROGMEM q_combo[]      = {KC_O, KC_T, KC_SPACE, COMBO_END};
 const uint16_t PROGMEM bslash_combo[] = {KC_LEFT, KC_DOWN, KC_RIGHT, COMBO_END};
 
 combo_t key_combos[COMBO_COUNT] = {
     [C_Z]      = COMBO_ACTION(z_combo),
-    [C_Q]      = COMBO_ACTION(q_combo),
     [C_BSLASH] = COMBO_ACTION(bslash_combo),
 };
 
@@ -84,7 +82,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                        //,---------------------------------------------------------------------------------------------------.
         RESET /*XXXXXXX*/, KC_L, KC_S, KC_H, KC_Z, KC_Q, KC_R, KC_N, KC_C, RESET /*XXXXXXX*/,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-        KC_G, KC_A, KC_E, KC_I, KC_V, KC_K, KC_O, KC_T, KC_SPACE, KC_Y,
+        KC_G, KC_A, KC_E, KC_I, KC_V, KC_K, R2_C7, R2_C8, R2_C9, KC_Y,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
         KC_LCTL, KC_P, KC_U, KC_F, KC_X, KC_J, KC_M, KC_D, KC_W, KC_LCMD,
         //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
@@ -186,20 +184,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         // -------------------------------------------
         //   Base layer
         // -------------------------------------------
-        case KC_SPACE: {
-            if (keyboard_report->mods & MOD_BIT(KC_LSFT)) {
-                if (record->event.pressed) {
-                    register_code(KC_MINUS);
-                } else {
-                    unregister_code(KC_MINUS);
-                }
-
-                return false;
-            } else {
-                return true;
-            }
-        }
-
         case KC_LCTL: {
             if (record->event.pressed) {
                 is_ctl_down       = true;
@@ -249,6 +233,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 is_shift_down = false;
             }
             return true;
+        }
+
+        case R2_C7: {
+            CHORD_VALUE(2)
+        }
+        case R2_C8: {
+            CHORD_VALUE(20)
+        }
+        case R2_C9: {
+            CHORD_VALUE(200)
         }
 
         case R4_C1: {
@@ -494,11 +488,6 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
                 tap_code(KC_Z);
             }
             break;
-        case C_Q:
-            if (pressed) {
-                tap_code(KC_Q);
-            }
-            break;
         case C_BSLASH:
             if (pressed) {
                 tap_code(KC_BSLASH);
@@ -533,6 +522,9 @@ bool process_chord_result(int value) {
         case 111:
             NORM_SHIFT("~", "^")
             return true;
+        case 222:
+            tap_code(KC_Q);
+            return true;
         default:
             return false;
     }
@@ -548,6 +540,15 @@ void process_incomplete_chord_value(int value) {
             break;
         case 100:
             NORM_SHIFT("-", "6")
+            break;
+        case 2:
+            tap_code(KC_O);
+            break;
+        case 20:
+            tap_code(KC_T);
+            break;
+        case 200:
+            NORM_SHIFT(SS_TAP(X_SPACE), "_")
             break;
         default:
             // unknown chord, possibly incomplete.
