@@ -16,7 +16,7 @@
 
 #pragma once
 
-#define DEBUG_ACTION
+// #define DEBUG_ACTION
 
 #define TAPPING_TERM 175
 #define PREVENT_STUCK_MODIFIERS
@@ -25,9 +25,9 @@
 // #define TAPPING_TOGGLE 1
 
 // https://github.com/qmk/qmk_firmware/blob/master/quantum/process_keycode/process_combo.h
-#define COMBO_COUNT 2
+#define COMBO_COUNT 3
 #define COMBO_ALLOW_ACTION_KEYS  // Needed for C_Q combo of cursor move actions (to replay actions when combo isn't complete)
-#define COMBO_TERM 40            // Default 200
+#define COMBO_TERM 60            // Default 200
 
 /* Mouse stuff */
 /* from https://www.reddit.com/r/olkb/comments/72u8ou/qmk_mouse_keys_rock/ */
