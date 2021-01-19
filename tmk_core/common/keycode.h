@@ -448,7 +448,7 @@ enum hid_keyboard_keypad_usage {
     KC_RGUI,
 
     /* kylpo additions */
-    KC_SPACE_UNDERSCORE
+    KC_SPACE_UNDERSCORE  // 0xE8
 
     // **********************************************
     // * 0xF0-0xFF are unallocated in the HID spec. *
