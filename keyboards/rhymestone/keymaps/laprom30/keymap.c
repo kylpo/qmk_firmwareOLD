@@ -80,7 +80,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [_BASE] = LAYOUT(  // TODO: remove RESETs when done coding
                        //,---------------------------------------------------------------------------------------------------.
-        RESET /*XXXXXXX*/, KC_L, KC_S, KC_H, KC_Z, KC_Q, KC_R, KC_N, KC_C, RESET /*XXXXXXX*/,
+        RESET /*XXXXXXX*/, KC_L, KC_S, KC_H, XXXXXXX, XXXXXXX, KC_R, KC_N, KC_C, RESET /*XXXXXXX*/,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
         KC_G, KC_A, KC_E, KC_I, KC_V, KC_K, R2_C7, R2_C8, R2_C9, KC_Y,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
@@ -149,36 +149,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 // Key macros
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    // static bool is_clicking           = false;
     static bool is_ctl_down           = false;
-    static bool is_cmd_down           = false;
     static bool is_shift_down         = false;
-    static bool is_alt_down           = false;
-    static bool has_ctl_been_used     = false;
-    static bool has_cmd_been_used     = false;
-    static bool has_shift_been_used   = false;
-    static bool has_alt_been_used     = false;
     static bool should_reenable_mouse = false;
-
-    // if CTL+keycode was used, make sure CTL's tap value isn't sent
-    if (is_ctl_down && !has_ctl_been_used && keycode != R3_C1 && keycode != A_R3_C1) {
-        has_ctl_been_used = true;
-    }
-
-    // if CMD+keycode was used, make sure CMD's tap value isn't sent
-    if (is_cmd_down && !has_cmd_been_used && keycode != R3_C10 && keycode != A_R3_C10) {
-        has_cmd_been_used = true;
-    }
-
-    // if SHIFT+keycode was used, make sure SHIFT's tap value isn't sent
-    if (is_shift_down && !has_shift_been_used && keycode != R4_C5 && keycode != A_R4_C5) {
-        has_shift_been_used = true;
-    }
-
-    // if ALT+keycode was used, make sure ALT's tap value isn't sent
-    if (is_alt_down && !has_alt_been_used && keycode != R4_C6) {
-        has_alt_been_used = true;
-    }
 
     switch (keycode) {
         // -------------------------------------------
@@ -186,9 +159,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         // -------------------------------------------
         case KC_LCTL: {
             if (record->event.pressed) {
-                is_ctl_down       = true;
-                has_ctl_been_used = false;
-
+                is_ctl_down = true;
                 if (IS_LAYER_ON(_MOUSE)) {
                     layer_off(_MOUSE);
                     should_reenable_mouse = true;
@@ -204,15 +175,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
         case KC_LCMD: {
             if (record->event.pressed) {
-                is_cmd_down       = true;
-                has_cmd_been_used = false;
-
                 if (IS_LAYER_ON(_MOUSE)) {
                     layer_off(_MOUSE);
                     should_reenable_mouse = true;
                 }
             } else {
-                is_cmd_down = false;
                 if (should_reenable_mouse) {
                     REENABLE_MOUSE();
                     should_reenable_mouse = false;
@@ -223,8 +190,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         case KC_LSFT: {
             if (record->event.pressed) {
-                is_shift_down       = true;
-                has_shift_been_used = false;
+                is_shift_down = true;
 
                 // shift speeds up mouse movement.
                 register_code(KC_ACL2);
@@ -253,8 +219,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case R4_C6: {
             if (record->event.pressed) {
                 layer_on(_ALTERNATE);  // hold
-                is_alt_down       = true;
-                has_alt_been_used = false;
 
                 if (IS_LAYER_ON(_MOUSE)) {
                     DISABLE_MOUSE();
@@ -262,7 +226,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
             } else {
                 layer_off(_ALTERNATE);
-                is_alt_down = false;
             }
             return false;
         }
@@ -287,100 +250,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             WHEN_CTRL(KC__VOLUP, KC_MEDIA_NEXT_TRACK)
         }
 
-            // -------------------------------------------
-            //   Mouse layer
-            // -------------------------------------------
-            // case KC_LSFT: {
-            //     if (record->event.pressed) {
-            //         is_shift_down = true;
-            //         // shift speeds up mouse movement.
-            //         register_code(KC_ACL2);
-            //     } else {
-            //         is_shift_down = false;
-            //         unregister_code(KC_ACL2);
-            //     }
-
-            //     // Do not send Shift during a click
-            //     return !is_clicking;
-            // }
-
-        // case KC_ACL2: {
-        //     if (record->event.pressed) {
-        //         is_shift_down = true;
-        //         // shift speeds up mouse movement.
-        //         // register_code(KC_ACL2);
-        //     } else {
-        //         is_shift_down = false;
-        //         // unregister_code(KC_ACL2);
-        //     }
-
-        //     // Do not send Shift during a click
-        //     return true;
-        // }
-
-        // case KC_BTN1: {
-        //     if (record->event.pressed) {
-        //         is_clicking = true;
-        //     } else {
-        //         is_clicking = false;
-        //     }
-        //     return true;
-        // }
-
         // -------------------------------------------
         //   Alt layer
         // -------------------------------------------
-
-        // tap: (
-        // shift+tap: {
-        // hold: CTL
-        case A_R3_C1: {
-            static uint16_t a_r3_c1_timer;
-
-            if (record->event.pressed) {
-                a_r3_c1_timer = timer_read();
-                register_code(KC_LCTL);  // hold
-                is_ctl_down       = true;
-                has_ctl_been_used = false;
-            } else {
-                unregister_code(KC_LCTL);
-                is_ctl_down = false;
-                if (!has_ctl_been_used && timer_elapsed(a_r3_c1_timer) < TAPPING_TERM) {
-                    if (get_mods() & MOD_BIT(KC_LSHIFT)) {
-                        // unregister_code(KC_LSHIFT);
-                        tap_code(KC_LBRACKET);  // shift + tap
-                        // register_code(KC_LSHIFT);
-                    } else {
-                        tap_code16(S(KC_9));  // tap
-                    }
-                }
-            }
-            return false;
-        }
-        // tap: )
-        // shift+tap: }
-        // hold: CMD
-        case A_R3_C10: {
-            static uint16_t a_r3_c10_timer;
-
-            if (record->event.pressed) {
-                a_r3_c10_timer = timer_read();
-                register_code(KC_LGUI);  // hold
-                is_cmd_down       = true;
-                has_cmd_been_used = false;
-            } else {
-                unregister_code(KC_LGUI);
-                is_cmd_down = false;
-                if (!has_cmd_been_used && timer_elapsed(a_r3_c10_timer) < TAPPING_TERM) {
-                    if (get_mods() & MOD_BIT(KC_LSHIFT)) {
-                        tap_code(KC_RBRACKET);  // shift + tap
-                    } else {
-                        tap_code16(S(KC_0));  // tap
-                    }
-                }
-            }
-            return false;
-        }
         case A_R1_C2: {
             NORM_SHIFT_EVENT("*", "1");
         }
@@ -480,7 +352,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 void process_combo_event(uint16_t combo_index, bool pressed) {
 #ifdef CONSOLE_ENABLE
-    uprintf("combo_index: %u\n", combo_index);
+    dprintf("combo_index: %u\n", combo_index);
 #endif
     switch (combo_index) {
         case C_Z:
@@ -559,7 +431,7 @@ void process_incomplete_chord_value(int value) {
 // use Capslock to toggle MOUSE mode
 bool led_update_user(led_t led_state) {
 #ifdef CONSOLE_ENABLE
-    uprintf("led_state: %u\n", led_state);
+    dprintf("led_state: %u\n", led_state);
 #endif
 
     if (led_state.caps_lock) {
