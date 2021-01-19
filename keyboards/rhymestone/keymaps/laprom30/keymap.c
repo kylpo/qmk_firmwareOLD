@@ -32,6 +32,7 @@
 
 #include QMK_KEYBOARD_H
 #include "keymap.h"
+#include "print.h"
 
 void process_incomplete_chord_value(int value);
 bool process_chord_result(int value);
@@ -42,7 +43,7 @@ enum layer_number { _BASE = 0, _ALTERNATE, _MOUSE };
 enum custom_keycodes { R4_C6 = SAFE_RANGE, R2_C7, R2_C8, R2_C9, R4_C1, R3_C1, R3_C10, A_R3_C1, A_R3_C10, A_R3_C2, R4_C5, A_R4_C5, A_R1_C2, A_R1_C3, A_R1_C4, A_R1_C5, A_R1_C6, A_R2_C2, A_R2_C3, A_R2_C4, A_R2_C5, A_R2_C6, A_R4_C1, A_R4_C10, A_R3_C3, A_R3_C4, A_R3_C5, A_R3_C6, A_R3_C8, A_R2_C10, A_R2_C1, A_R1_C7, A_R1_C9, M_R4_C6 };
 enum combo_events { C_Z, C_BSLASH };
 
-const uint16_t PROGMEM z_combo[]      = {KC_A, KC_E, KC_I, COMBO_END};
+const uint16_t PROGMEM z_combo[]      = {KC_A, KC_SPC_UND, KC_I, COMBO_END};
 const uint16_t PROGMEM bslash_combo[] = {KC_LEFT, KC_DOWN, KC_RIGHT, COMBO_END};
 
 combo_t key_combos[COMBO_COUNT] = {
@@ -82,7 +83,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                        //,---------------------------------------------------------------------------------------------------.
         RESET /*XXXXXXX*/, KC_L, KC_S, KC_H, KC_Z, KC_Q, KC_R, KC_N, KC_C, RESET /*XXXXXXX*/,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-        KC_G, KC_A, KC_E, KC_I, KC_V, KC_K, R2_C7, R2_C8, R2_C9, KC_Y,
+        KC_G, KC_A, KC_SPC_UND, KC_I, KC_V, KC_K, R2_C7, R2_C8, KC_SPC_UND, KC_Y,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
         KC_LCTL, KC_P, KC_U, KC_F, KC_X, KC_J, KC_M, KC_D, KC_W, KC_LCMD,
         //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
@@ -480,7 +481,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 void process_combo_event(uint16_t combo_index, bool pressed) {
 #ifdef CONSOLE_ENABLE
-    uprintf("combo_index: %u\n", combo_index);
+    dprintf("combo_index: %u\n", combo_index);
 #endif
     switch (combo_index) {
         case C_Z:
@@ -559,7 +560,7 @@ void process_incomplete_chord_value(int value) {
 // use Capslock to toggle MOUSE mode
 bool led_update_user(led_t led_state) {
 #ifdef CONSOLE_ENABLE
-    uprintf("led_state: %u\n", led_state);
+    // dprintf("led_state: %u\n", led_state);
 #endif
 
     if (led_state.caps_lock) {
@@ -573,8 +574,8 @@ bool led_update_user(led_t led_state) {
 
 void keyboard_post_init_user(void) {
 #ifdef CONSOLE_ENABLE
-    debug_enable   = true;
-    debug_matrix   = true;
+    debug_enable = true;
+    // debug_matrix   = true;
     debug_keyboard = true;
 // debug_mouse=true;
 #endif

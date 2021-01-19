@@ -56,18 +56,19 @@ static inline void dump_key_buffer(bool emit) {
         return;
     }
 
-    print("DUMP");
-
     if (emit) {
         for (uint8_t i = 0; i < buffer_size; i++) {
 #ifdef COMBO_ALLOW_ACTION_KEYS
 
             const action_t action = store_or_get_action(key_buffer[i].event.pressed, key_buffer[i].event.key);
-#    ifdef CONSOLE_ENABLE
-            uprintf("action %u", action);
-#    endif
+            dprintf("action %u\n", action);
+            // dprintf("key: %u\n", key_buffer[i].event.key);
+            // dprintf("pressed: %u\n", key_buffer[i].event.pressed);
+
+            // dprintf("dump_key_buffer: %u\n", key_buffer[i]);
             process_action(&(key_buffer[i]), action);
 #else
+            dprintf("dump_key_buffer: %u\n", key_buffer[i]);
             register_code16(key_buffer[i]);
             send_keyboard_report();
 #endif
@@ -150,6 +151,7 @@ bool process_combo(uint16_t keycode, keyrecord_t *record) {
     }
 
     if (!is_combo_enabled()) {
+        dprint("process_combo::!is_combo_enabled()");
         return true;
     }
 #ifndef COMBO_VARIABLE_LEN
@@ -163,11 +165,13 @@ bool process_combo(uint16_t keycode, keyrecord_t *record) {
     }
 
     if (drop_buffer) {
+        dprint("process_combo::drop_buffer");
         /* buffer is only dropped when we complete a combo, so we refresh the timer
          * here */
         timer = timer_read();
         dump_key_buffer(false);
     } else if (!is_combo_key) {
+        dprint("process_combo::!is_combo_key\n");
         /* if no combos claim the key we need to emit the keybuffer */
         dump_key_buffer(true);
 
@@ -197,6 +201,8 @@ void matrix_scan_combo(void) {
         /* This disables the combo, meaning key events for this
          * combo will be handled by the next processors in the chain
          */
+        dprint("process_combo::matrix_scan_combo");
+
         is_active = false;
         dump_key_buffer(true);
     }

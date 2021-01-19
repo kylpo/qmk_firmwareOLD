@@ -16,6 +16,8 @@
 
 #pragma once
 
+#define DEBUG_ACTION
+
 #define TAPPING_TERM 175
 #define PREVENT_STUCK_MODIFIERS
 #define IGNORE_MOD_TAP_INTERRUPT

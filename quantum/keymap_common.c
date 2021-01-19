@@ -57,7 +57,7 @@ action_t action_for_key(uint8_t layer, keypos_t key) {
 
     switch (keycode) {
         case KC_A ... KC_EXSEL:
-        case KC_LCTRL ... KC_RGUI:
+        case KC_LCTRL ... KC_SPACE_UNDERSCORE:
             action.code = ACTION_KEY(keycode);
             break;
 #ifdef EXTRAKEY_ENABLE
