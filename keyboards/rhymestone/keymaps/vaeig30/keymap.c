@@ -273,10 +273,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case KC_P: {
             WHEN_CTRL(KC__VOLDOWN, KC_MEDIA_PREV_TRACK)
         }
-        case KC_U: {
+        case KC_F: {
             WHEN_CTRL(KC__MUTE, KC_MEDIA_PLAY_PAUSE)
         }
-        case KC_F: {
+        case KC_U: {
             WHEN_CTRL(KC__VOLUP, KC_MEDIA_NEXT_TRACK)
         }
 
