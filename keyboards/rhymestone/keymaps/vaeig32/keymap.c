@@ -140,20 +140,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         // -------------------------------------------
         //   Base layer
         // -------------------------------------------
-        case KC_SPACE: {
-            if (keyboard_report->mods & MOD_BIT(KC_LSFT)) {
-                if (record->event.pressed) {
-                    register_code(KC_MINUS);
-                } else {
-                    unregister_code(KC_MINUS);
-                }
-
-                return false;
-            } else {
-                return true;
-            }
-        }
-
         case KC_LCTL: {
             if (record->event.pressed) {
                 is_ctl_down = true;
@@ -307,30 +293,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case A_R3_C6: {
             NORM_SHIFT_EVENT("|", "%");
         }
-        case KC_BSPC: {
-            if (is_shift_down) {
-                if (record->event.pressed) {
-                    register_code(KC_4);
-                } else {
-                    unregister_code(KC_4);
-                }
-                return false;
-            }
-            return true;
-        }
         case A_R3_C8: {
             NORM_SHIFT_EVENT(":", ";");
-        }
-        case KC_DEL: {
-            if (is_shift_down) {
-                if (record->event.pressed) {
-                    register_code(KC_5);
-                } else {
-                    unregister_code(KC_5);
-                }
-                return false;
-            }
-            return true;
         }
         case A_R4_C1: {
             NORM_SHIFT_EVENT("(", "{");
