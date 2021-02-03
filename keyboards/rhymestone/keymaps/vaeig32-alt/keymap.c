@@ -152,7 +152,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     should_reenable_mouse = true;
                 }
 
-                if (is_mouse_acl_down) {
+                if (is_mouse_acl_down && !should_unshift) {
                     register_code(KC_LSHIFT);
                     is_shift_down  = true;
                     should_unshift = true;
@@ -179,7 +179,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     should_reenable_mouse = true;
                 }
 
-                if (is_mouse_acl_down) {
+                if (is_mouse_acl_down && !should_unshift) {
                     register_code(KC_LSHIFT);
                     is_shift_down  = true;
                     should_unshift = true;
