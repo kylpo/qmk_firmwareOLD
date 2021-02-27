@@ -33,9 +33,6 @@
 #include QMK_KEYBOARD_H
 #include "keymap.h"
 
-#define M_CMD_CLICK LGUI(KC_MS_BTN1)
-#define M_SFT_CLICK LSFT(KC_MS_BTN1)
-
 enum layer_number { _BASE = 0, _ALTERNATE, _MOUSE };
 enum custom_keycodes { R4_C6 = SAFE_RANGE, R2_C7, R2_C8, R2_C9, R4_C1, R3_C1, R3_C10, A_R3_C1, A_R3_C10, A_R3_C2, R4_C5, A_R4_C5, A_R1_C2, A_R1_C3, A_R1_C4, A_R1_C5, A_R1_C6, A_R2_C2, A_R2_C3, A_R2_C4, A_R2_C5, A_R2_C6, A_R4_C1, A_R4_C10, A_R3_C3, A_R3_C4, A_R3_C5, A_R3_C6, A_R3_C8, A_R2_C10, A_R2_C1, A_R1_C7, A_R1_C9, M_R4_C6 };
 
@@ -121,11 +118,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * `----------------------------------'           `----------------------------------'
      */
     [_MOUSE] = LAYOUT(  //,---------------------------------------------------------------------------------------------------.
-        XXXXXXX, XXXXXXX, KC_WH_U, M_SFT_CLICK, XXXXXXX, XXXXXXX, KC_F19, KC_MS_U, KC_F18, XXXXXXX,
+        XXXXXXX, XXXXXXX, KC_WH_U, LSFT(KC_MS_BTN1), XXXXXXX, XXXXXXX, KC_F19, KC_MS_U, KC_F18, XXXXXXX,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
         XXXXXXX, KC_BTN2, KC_WH_D, KC_BTN1, XXXXXXX, XXXXXXX, KC_MS_L, KC_MS_D, KC_MS_R, XXXXXXX,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-        _______, KC_WH_L, M_CMD_CLICK, KC_WH_R, XXXXXXX, XXXXXXX, KC_F15, KC_F16, KC_F17, _______,
+        _______, KC_WH_L, LGUI(KC_MS_BTN1), KC_WH_R, XXXXXXX, XXXXXXX, KC_F15, KC_F16, KC_F17, _______,
         //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_ACL2, _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX
         //,---------------------------------------------------------------------------------------------------.
@@ -214,7 +211,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             } else {
                 is_mouse_acl_down = false;
 
-                // Unshift if CTL or CMD auto-shifted
+                // Unshift if CTL, CMD, or ALT auto-shifted
                 if (should_unshift) {
                     should_unshift = false;
                     unregister_code(KC_LSHIFT);
@@ -235,6 +232,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
                 if (IS_LAYER_ON(_MOUSE)) {
                     DISABLE_MOUSE();
+
+                    // Mouse ACL is now Shift
+                    if (is_mouse_acl_down && !should_unshift) {
+                        register_code(KC_LSHIFT);
+                        is_shift_down  = true;
+                        should_unshift = true;
+                    }
                 }
 
             } else {
@@ -269,8 +273,24 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case A_R1_C2: {
             NORM_SHIFT_EVENT("!", "1");
         }
+        // [?, 2]
         case A_R1_C3: {
-            NORM_SHIFT_EVENT("?", "2");
+            // NORM_SHIFT_EVENT("?", "2");
+            if (record->event.pressed) {
+                if (is_shift_down) {
+                    register_code(KC_KP_2);
+                } else {
+                    register_code16(S(KC_SLASH));
+                }
+            } else {
+                if (is_shift_down) {
+                    unregister_code(KC_KP_2);
+                } else {
+                    unregister_code16(S(KC_SLASH));
+                }
+            }
+
+            return true;
         }
         case A_R1_C4: {
             NORM_SHIFT_EVENT("+", "3");
@@ -302,8 +322,24 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case A_R2_C2: {
             NORM_SHIFT_EVENT("'", "4");
         }
+        // [", 5]
         case A_R2_C3: {
-            NORM_SHIFT_EVENT("\"", "5");
+            // NORM_SHIFT_EVENT("\"", "5");
+            if (record->event.pressed) {
+                if (is_shift_down) {
+                    register_code(KC_KP_5);
+                } else {
+                    register_code16(S(KC_QUOTE));
+                }
+            } else {
+                if (is_shift_down) {
+                    unregister_code(KC_KP_5);
+                } else {
+                    unregister_code16(S(KC_QUOTE));
+                }
+            }
+
+            return true;
         }
         case A_R2_C4: {
             NORM_SHIFT_EVENT("-", "6")

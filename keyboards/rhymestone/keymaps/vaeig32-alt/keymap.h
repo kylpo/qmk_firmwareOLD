@@ -32,17 +32,19 @@
 #define WHEN_CTRL(kc, shiftedKc)          \
     if (record->event.pressed) {          \
         if (is_ctl_down) {                \
+            unregister_code(KC_LCTL);     \
             if (is_shift_down) {          \
-                register_code(shiftedKc); \
+                unregister_code(KC_LSFT); \
+                tap_code(shiftedKc);      \
+                register_code(KC_LSFT);   \
             } else {                      \
-                register_code(kc);        \
+                tap_code(kc);             \
             }                             \
+            register_code(KC_LCTL);       \
         } else {                          \
             register_code(keycode);       \
         }                                 \
     } else {                              \
-        unregister_code(shiftedKc);       \
-        unregister_code(kc);              \
         unregister_code(keycode);         \
     }                                     \
     return false;

@@ -252,6 +252,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
                 if (IS_LAYER_ON(_MOUSE)) {
                     DISABLE_MOUSE();
+
+                    // Mouse ACL is now Shift
+                    if (is_mouse_acl_down && !should_unshift) {
+                        register_code(KC_LSHIFT);
+                        is_shift_down  = true;
+                        should_unshift = true;
+                    }
                 }
 
             } else {
@@ -286,8 +293,24 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case A_R1_C2: {
             NORM_SHIFT_EVENT("!", "1");
         }
+        // [?, 2]
         case A_R1_C3: {
-            NORM_SHIFT_EVENT("?", "2");
+            // NORM_SHIFT_EVENT("?", "2");
+            if (record->event.pressed) {
+                if (is_shift_down) {
+                    register_code(KC_KP_2);
+                } else {
+                    register_code16(S(KC_SLASH));
+                }
+            } else {
+                if (is_shift_down) {
+                    unregister_code(KC_KP_2);
+                } else {
+                    unregister_code16(S(KC_SLASH));
+                }
+            }
+
+            return true;
         }
         case A_R1_C4: {
             NORM_SHIFT_EVENT("+", "3");

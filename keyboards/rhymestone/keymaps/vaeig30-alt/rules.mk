@@ -8,4 +8,7 @@ LTO_ENABLE = yes
 # See https://github.com/qmk/qmk_firmware/issues/2471#issuecomment-452271130
 KEYBOARD_SHARED_EP = yes 
 
+# Needed for media keys
+EXTRAKEY_ENABLE = yes
+
 # CONSOLE_ENABLE = yes
