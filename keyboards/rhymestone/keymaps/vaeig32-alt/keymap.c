@@ -108,7 +108,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /*
      * Mouse
      * ,----------------------------------.           ,----------------------------------.
-     * |      |      |SCR ^ | SCLK |      |           |      |      |  UP  |      |      |
+     * |      | SPC  |SCR ^ | SCLK |      |           |      |      |  UP  |      |      |
      * |------+------+------+------+------|           |------+------+------+------+------|
      * |      | RCLK |SCR v | CLICK|      |           |      | LEFT | DOWN | RIGHT|      |
      * |------+------+------+------+------|           |------+------+------+------+------|
@@ -118,7 +118,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * `----------------------------------'           `----------------------------------'
      */
     [_MOUSE] = LAYOUT(  //,---------------------------------------------------------------------------------------------------.
-        XXXXXXX, XXXXXXX, KC_WH_U, LSFT(KC_MS_BTN1), XXXXXXX, XXXXXXX, KC_F19, KC_MS_U, KC_F18, XXXXXXX,
+        XXXXXXX, KC_SPACE, KC_WH_U, LSFT(KC_MS_BTN1), XXXXXXX, XXXXXXX, KC_F19, KC_MS_U, KC_F18, XXXXXXX,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
         XXXXXXX, KC_BTN2, KC_WH_D, KC_BTN1, XXXXXXX, XXXXXXX, KC_MS_L, KC_MS_D, KC_MS_R, XXXXXXX,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
@@ -256,15 +256,41 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return true;
         }
 
-        // Media
+        // Mod-Overrides
+        //
+        // CTRL P,F,U => Media
+        // CMD H <=> C
+        // CMD P <=> V
+        // CMD U <=> Z
         case KC_P: {
             WHEN_CTRL(KC__VOLDOWN, KC_MEDIA_PREV_TRACK)
+            WHEN_CMD(KC_V)
+            return true;
         }
         case KC_F: {
             WHEN_CTRL(KC__MUTE, KC_MEDIA_PLAY_PAUSE)
+            return true;
         }
         case KC_U: {
             WHEN_CTRL(KC__VOLUP, KC_MEDIA_NEXT_TRACK)
+            WHEN_CMD(KC_Z)
+            return true;
+        }
+        case KC_V: {
+            WHEN_CMD(KC_P)
+            return true;
+        }
+        case KC_Z: {
+            WHEN_CMD(KC_U)
+            return true;
+        }
+        case KC_H: {
+            WHEN_CMD(KC_C)
+            return true;
+        }
+        case KC_C: {
+            WHEN_CMD(KC_H)
+            return true;
         }
 
         // -------------------------------------------

@@ -29,25 +29,27 @@
 
 // Different keycode when Ctrl is pressed
 // Inspired by https://github.com/qmk/qmk_firmware/tree/master/users/spacebarracecar
-#define WHEN_CTRL(kc, shiftedKc)          \
-    if (record->event.pressed) {          \
-        if (is_ctl_down) {                \
-            unregister_code(KC_LCTL);     \
-            if (is_shift_down) {          \
-                unregister_code(KC_LSFT); \
-                tap_code(shiftedKc);      \
-                register_code(KC_LSFT);   \
-            } else {                      \
-                tap_code(kc);             \
-            }                             \
-            register_code(KC_LCTL);       \
-        } else {                          \
-            register_code(keycode);       \
-        }                                 \
-    } else {                              \
-        unregister_code(keycode);         \
-    }                                     \
-    return false;
+#define WHEN_CTRL(kc, shiftedKc)                \
+    if (record->event.pressed && is_ctl_down) { \
+        unregister_code(KC_LCTL);               \
+        if (is_shift_down) {                    \
+            unregister_code(KC_LSFT);           \
+            tap_code(shiftedKc);                \
+            register_code(KC_LSFT);             \
+        } else {                                \
+            tap_code(kc);                       \
+        }                                       \
+        register_code(KC_LCTL);                 \
+        return false;                           \
+    }
+
+// Different keycode when Ctrl is pressed
+// Inspired by https://github.com/qmk/qmk_firmware/tree/master/users/spacebarracecar
+#define WHEN_CMD(kc)                                                         \
+    if (record->event.pressed && keyboard_report->mods & MOD_BIT(KC_LCMD)) { \
+        tap_code(kc);                                                        \
+        return false;                                                        \
+    }
 
 #define ENABLE_MOUSE()                          \
     if (!host_keyboard_led_state().caps_lock) { \
