@@ -1,5 +1,6 @@
 MOUSEKEY_ENABLE = yes
 # COMBO_ENABLE = yes
+TAP_DANCE_ENABLE = yes 
 
 # Increase compile time, but reduce compiled size on firmware
 LTO_ENABLE = yes

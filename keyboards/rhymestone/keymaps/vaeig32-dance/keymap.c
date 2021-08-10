@@ -36,6 +36,20 @@
 enum layer_number { _BASE = 0, _ALTERNATE, _MOUSE };
 enum custom_keycodes { R4_C6 = SAFE_RANGE, R2_C7, R2_C8, R2_C9, R4_C1, R3_C1, R3_C10, A_R3_C1, A_R3_C10, A_R3_C2, R4_C5, A_R4_C5, A_R1_C2, A_R1_C3, A_R1_C4, A_R3_C5, A_R3_C6, A_R2_C2, A_R2_C3, A_R2_C4, A_R2_C5, A_R2_C6, A_R4_C1, A_R4_C10, A_R3_C3, A_R3_C4, A_R3_C9, A_R3_C7, A_R3_C8, A_R2_C10, A_R2_C1, A_R1_C7, A_R1_C9, M_R4_C6 };
 
+// Tap Dance declarations
+enum {
+    TD_Y_Q,
+    TD_J_Z,
+};
+
+// Tap Dance definitions
+qk_tap_dance_action_t tap_dance_actions[] = {
+    // Tap once for Y, twice for Q
+    [TD_Y_Q] = ACTION_TAP_DANCE_DOUBLE(KC_Y, KC_Q),
+    // Tap once for J, twice for Z
+    [TD_J_Z] = ACTION_TAP_DANCE_DOUBLE(KC_J, KC_Z),
+};
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /*
      * ,----------------------------------.           ,----------------------------------.
@@ -63,9 +77,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                        //,---------------------------------------------------------------------------------------------------.
         KC_Z, KC_L, KC_S, KC_H, KC_DEL, KC_BSPC, KC_R, KC_N, KC_C, KC_Q,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-        KC_V, KC_A, KC_E, KC_I, KC_G, KC_Y, KC_O, KC_T, KC_SPC_UND, KC_K,
+        KC_V, KC_A, KC_E, KC_I, KC_G, TD(TD_Y_Q), KC_O, KC_T, KC_SPC_UND, KC_K,
         //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-        KC_LCTL, KC_P, KC_F, KC_U, KC_X, KC_J, KC_D, KC_M, KC_W, KC_LCMD,
+        KC_LCTL, KC_P, KC_F, KC_U, KC_X, TD(TD_J_Z), KC_D, KC_M, KC_W, KC_LCMD,
         //`---------+---------+---------+---------+---------+---------+---------+---------+---------+---------'
         R4_C1, XXXXXXX, RESET, XXXXXXX, KC_LSFT, R4_C6, XXXXXXX, RESET, XXXXXXX, KC_B
         //,---------------------------------------------------------------------------------------------------.
