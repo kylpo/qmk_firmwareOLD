@@ -190,6 +190,8 @@ bool process_record_quantum(keyrecord_t *record) {
     //   return false;
     // }
 
+    dprintf("quantum keycode: %u\n", keycode);
+
 #ifdef VELOCIKEY_ENABLE
     if (velocikey_enabled() && record->event.pressed) {
         velocikey_accelerate();
@@ -279,6 +281,9 @@ bool process_record_quantum(keyrecord_t *record) {
 #ifdef JOYSTICK_ENABLE
             process_joystick(keycode, record) &&
 #endif
+            /* KC_SPC_UND */
+            process_spc_und(keycode, record) &&
+
             true)) {
         return false;
     }

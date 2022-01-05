@@ -530,6 +530,8 @@ ifeq ($(strip $(GRAVE_ESC_ENABLE)), yes)
     OPT_DEFS += -DGRAVE_ESC_ENABLE
 endif
 
+SRC += $(QUANTUM_DIR)/process_keycode/process_spc_und.c
+
 ifeq ($(strip $(DYNAMIC_MACRO_ENABLE)), yes)
     SRC += $(QUANTUM_DIR)/process_keycode/process_dynamic_macro.c
     OPT_DEFS += -DDYNAMIC_MACRO_ENABLE

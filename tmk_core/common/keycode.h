@@ -161,6 +161,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define KC_ROPT KC_RALT
 #define KC_RCMD KC_RGUI
 #define KC_RWIN KC_RGUI
+#define KC_SPC_UND KC_SPACE_UNDERSCORE
 
 /* Generic Desktop Page (0x01) */
 #define KC_PWR KC_SYSTEM_POWER
@@ -444,7 +445,10 @@ enum hid_keyboard_keypad_usage {
     KC_RCTRL,
     KC_RSHIFT,
     KC_RALT,
-    KC_RGUI
+    KC_RGUI,
+
+    /* kylpo additions */
+    KC_SPACE_UNDERSCORE  // 0xE8
 
     // **********************************************
     // * 0xF0-0xFF are unallocated in the HID spec. *

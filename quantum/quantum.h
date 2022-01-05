@@ -61,6 +61,7 @@
 #include "suspend.h"
 #include <stddef.h>
 #include <stdlib.h>
+#include "process_spc_und.h"
 
 extern layer_state_t default_layer_state;
 

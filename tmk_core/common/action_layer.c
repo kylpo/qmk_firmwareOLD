@@ -228,6 +228,9 @@ uint8_t read_source_layers_cache(keypos_t key) {
  */
 action_t store_or_get_action(bool pressed, keypos_t key) {
 #if !defined(NO_ACTION_LAYER) && !defined(STRICT_LAYER_RELEASE)
+    dprintf("store_or_get_action pressed %u\n", pressed);
+    dprintf("store_or_get_action key %u\n", key);
+
     if (disable_action_cache) {
         return layer_switch_get_action(key);
     }
@@ -242,6 +245,9 @@ action_t store_or_get_action(bool pressed, keypos_t key) {
     }
     return action_for_key(layer, key);
 #else
+    dprintf("store_or_get_action pressed %u\n", pressed);
+    dprintf("store_or_get_action key %u\n", key);
+
     return layer_switch_get_action(key);
 #endif
 }
